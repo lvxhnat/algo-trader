@@ -3,6 +3,8 @@ import * as React from "react";
 import { Alert, CssBaseline, Divider, Snackbar, Stack } from "@mui/material";
 import Navigation from "components/Navigation";
 import { ALERTS } from "common/constant/literals";
+import { getConnectionHealth } from "./request";
+import { useConnectedStore } from "store/general/general";
 
 export interface ContainerWrapperProps {
   children: React.ReactNode;
@@ -10,22 +12,33 @@ export interface ContainerWrapperProps {
 }
 
 export default function ContainerWrapper(props: ContainerWrapperProps) {
-  const [online, setOnline] = React.useState<boolean>(navigator.onLine);
+  const [connected, setConnected] = useConnectedStore(state => [state.connected, state.setConnected])
 
   if (window.location.href === "/")
-    console.log(
-      "██╗ ██████╗ ███╗   ██╗    ███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗\n██║██╔═══██╗████╗  ██║    ██╔════╝████╗  ██║██╔════╝ ██║████╗  ██║██╔════╝\n██║██║   ██║██╔██╗ ██║    █████╗  ██╔██╗ ██║██║  ███╗██║██╔██╗ ██║█████╗  \n██║██║   ██║██║╚██╗██║    ██╔══╝  ██║╚██╗██║██║   ██║██║██║╚██╗██║██╔══╝  \n██║╚██████╔╝██║ ╚████║    ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗\n╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝"
-    );
+    console.log(`
+    ______   __                              __                               __                     
+ /      \ |  \                            |  \                             |  \                    
+|  $$$$$$\| $$  ______    ______         _| $$_     ______   ______    ____| $$  ______    ______  
+| $$__| $$| $$ /      \  /      \       |   $$ \   /      \ |      \  /      $$ /      \  /      \ 
+| $$    $$| $$|  $$$$$$\|  $$$$$$\       \$$$$$$  |  $$$$$$\ \$$$$$$\|  $$$$$$$|  $$$$$$\|  $$$$$$\
+| $$$$$$$$| $$| $$  | $$| $$  | $$        | $$ __ | $$   \$$/      $$| $$  | $$| $$    $$| $$   \$$
+| $$  | $$| $$| $$__| $$| $$__/ $$        | $$|  \| $$     |  $$$$$$$| $$__| $$| $$$$$$$$| $$      
+| $$  | $$| $$ \$$    $$ \$$    $$         \$$  $$| $$      \$$    $$ \$$    $$ \$$     \| $$      
+ \$$   \$$ \$$ _\$$$$$$$  \$$$$$$           \$$$$  \$$       \$$$$$$$  \$$$$$$$  \$$$$$$$ \$$      
+              |  \__| $$                                                                           
+               \$$    $$                                                                           
+                \$$$$$$                                                                            
+    `);
 
   React.useEffect(() => {
-    const handleStatusChange = () => setOnline(navigator.onLine);
-    window.addEventListener("online", handleStatusChange);
-    window.addEventListener("offline", handleStatusChange);
-    return () => {
-      window.removeEventListener("online", handleStatusChange);
-      window.removeEventListener("offline", handleStatusChange);
-    };
-  }, [online]);
+    const interval = setInterval(() => {
+      getConnectionHealth().then((res) => {
+        if (res !== undefined) return setConnected(res.data.connected_status);
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Stack
@@ -39,10 +52,17 @@ export default function ContainerWrapper(props: ContainerWrapperProps) {
       <CssBaseline />
       <Navigation hideNavigate={props.hideNavigate} />
       {props.hideNavigate ? <></> : <Divider style={{ width: "100%" }} />}
-      <div style={{ paddingTop: 10, height: "100%", width: "100%", overflowY: "hidden" }}>
+      <div
+        style={{
+          paddingTop: 10,
+          height: "100%",
+          width: "100%",
+          overflowY: "hidden",
+        }}
+      >
         {props.children}
       </div>
-      {!online ? (
+      {!connected ? (
         <Snackbar open={true}>
           <Alert severity="error"> {ALERTS.OFFLINE} </Alert>
         </Snackbar>

@@ -8,19 +8,23 @@ import {
   Typography,
 } from "@mui/material";
 import { PortfolioPositionsData, getPortfolioPositions } from "./requests";
+import { useConnectedStore } from "store/general/general";
 
 const StyledTableCell = (props: { children?: React.ReactNode }) => {
   return (
-    <TableCell>
+    <TableCell style={{ paddingTop: 1, paddingBottom: 1 }}>
       <Typography variant="subtitle1">{props.children}</Typography>
     </TableCell>
   );
 };
 export default function PortfolioPositions() {
-  const [activePositions, setActivePositions] = React.useState<PortfolioPositionsData[]>([]);
+  const [activePositions, setActivePositions] = React.useState<
+    PortfolioPositionsData[]
+  >([]);
+  const connected = useConnectedStore(state => state.connected)
   React.useEffect(() => {
-    getPortfolioPositions().then((res) => setActivePositions(res.data))
-  }, []);
+    getPortfolioPositions().then((res) => setActivePositions(res.data));
+  }, [connected]);
 
   return (
     <div>
@@ -30,25 +34,24 @@ export default function PortfolioPositions() {
         sx={{ tableLayout: "fixed", width: "100%", height: "100%" }}
       >
         <TableHead>
-          <TableRow>
-          </TableRow>
+          <TableRow></TableRow>
         </TableHead>
         <TableBody>
           {activePositions.map((position) => (
             <TableRow key={`${position.symbol}-outstandingPositions`}>
-              <StyledTableCell key={`${position.symbol}-cell2`}>
+              <StyledTableCell key={`${position.symbol}-cell1`}>
                 {position.symbol}
               </StyledTableCell>
-              <StyledTableCell key={`${position.symbol}-cell3`}>
+              <StyledTableCell key={`${position.symbol}-cell2`}>
                 {position.position}
               </StyledTableCell>
               <StyledTableCell key={`${position.symbol}-cell3`}>
                 ${position.average_cost.toFixed(2)}
               </StyledTableCell>
-              <StyledTableCell key={`${position.symbol}-cell3`}>
+              <StyledTableCell key={`${position.symbol}-cell4`}>
                 {position.exchange}
               </StyledTableCell>
-              <StyledTableCell key={`${position.symbol}-cell3`}>
+              <StyledTableCell key={`${position.symbol}-cell5`}>
                 {position.currency}
               </StyledTableCell>
             </TableRow>

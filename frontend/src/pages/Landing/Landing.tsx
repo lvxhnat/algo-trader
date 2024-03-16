@@ -8,7 +8,7 @@ import PortfolioPositions from "./PortfolioPositions";
 export default function Landing() {
   return (
     <ContainerWrapper>
-      <Grid container spacing={1}>
+      <Grid container spacing={2}>
         <Grid item xs={7}>
           <PortfolioPositions />
         </Grid>

@@ -5,9 +5,8 @@ import Logo from "../../assets/logo.png";
 
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "common/constant";
-import AlternativeDataButton from "./AlternativeDataButton";
 import AnalyticsButton from "./AnalyticsButton";
-import AboutButton from "./AboutButton/AboutButton";
+import ProfileButton from "./ProfileButton";
 import { Grid } from "@mui/material";
 
 interface NavigationProps {
@@ -41,14 +40,10 @@ export default function Navigation(props: NavigationProps) {
           <></>
         ) : (
           <React.Fragment>
-            <AnalyticsButton />
-            <AlternativeDataButton />
-            <AboutButton />
           </React.Fragment>
         )}
       </Grid>
-      <Grid item xs={2} display="flex" justifyContent="flex-end">
-      </Grid>
+      <Grid item xs={2} display="flex" justifyContent="flex-end"><ProfileButton/></Grid>
     </Grid>
   );
 }
