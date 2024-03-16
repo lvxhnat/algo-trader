@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 
+export function numberWithCommas(x: string) {
+  return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 export const isArray = function (a: any) {
   return !!a && a.constructor === Array;
 };

@@ -1,32 +1,26 @@
-from fastapi import APIRouter
 from typing import List
-from ib_insync import Contract, ContractDetails
+from fastapi import APIRouter, WebSocket
+from ib_insync import PortfolioItem
 from algo_trader.app.config.base_config import ibkr_client
+from algo_trader.app.api.clients.portfolio import serialise_portfolioitem
 
 tag = "portfolio"
 router = APIRouter(tags=[tag], prefix=f"/{tag}")
 
-@router.get("")
-async def get_portfolio():
+@router.websocket("/holdings")
+async def get_portfolio_holdings(websocket: WebSocket):
 
+    await websocket.accept()
+    
     positions = []
+    portfolio_items: List[PortfolioItem] = ibkr_client.portfolio()
 
-    for position in ibkr_client.positions():
-        contract = position.contract
+    for portfolio_item in portfolio_items:
+        positions.append(await serialise_portfolioitem(portfolio_item))
 
-        ibkr_client.qualifyContracts(contract)
-        contract_details: List[ContractDetails] = ibkr_client.reqContractDetailsAsync(contract)
+    await websocket.send_json({"status": "initialise", "data": positions})
 
-        print(contract_details)
+    async def send_portfolio_event(portfolio_item: PortfolioItem):
+        await websocket.send_json({"status": "change", "data": await serialise_portfolioitem(portfolio_item)})
 
-        positions.append({
-            "contract_id": contract.conId,
-            "symbol": contract.symbol,
-            "exchange": contract.exchange,
-            "currency": contract.currency,
-            "asset_type": contract.secType,
-            "position": position.position,
-            "average_cost": position.avgCost,
-        })
-
-    return positions
+    ibkr_client.updatePortfolioEvent += send_portfolio_event

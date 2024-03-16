@@ -3,6 +3,7 @@ import warnings
 from ib_insync import *
 
 class IBKRClient(IB):
+
     def __init__(self):
         super().__init__()
         self.ibkr_port = 7497
@@ -20,7 +21,7 @@ class IBKRClient(IB):
                     await super().connectAsync(self.ibkr_host, self.ibkr_port, 0)
                     if (self.isConnected()):
                         print("IBKR Instance connected")
-                        self.cascade_info()
+                        await self.cascade_info()
             except Exception as e:
                 warnings.warn(f"Error occurred while connecting to IBKR Servers. {str(e)}")
             await asyncio.sleep(5)
@@ -34,10 +35,10 @@ class IBKRClient(IB):
             warnings.warn("IBKR Session unable to run because TWS is not open")
 
     async def cascade_info(self, ):
-        self.news_provider_codes = self.get_news_provider_codes()
+        self.news_provider_codes = await self.get_news_provider_codes()
 
     async def get_news_provider_codes(self, ) -> str: 
-        news_providers = ibkr_client.reqNewsProviders()
+        news_providers = await ibkr_client.reqNewsProvidersAsync()
         return "+".join([provider.code for provider in news_providers])
 
 ibkr_client: IB = IBKRClient()

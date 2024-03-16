@@ -36,14 +36,11 @@ export default function Navigation(props: NavigationProps) {
         style={{ display: "flex", gap: 25 }}
         justifyContent="center"
       >
-        {props.hideNavigate ? (
-          <></>
-        ) : (
-          <React.Fragment>
-          </React.Fragment>
-        )}
+        {props.hideNavigate ? <></> : <React.Fragment></React.Fragment>}
       </Grid>
-      <Grid item xs={2} display="flex" justifyContent="flex-end"><ProfileButton/></Grid>
+      <Grid item xs={2} display="flex" justifyContent="flex-end">
+        <ProfileButton />
+      </Grid>
     </Grid>
   );
 }

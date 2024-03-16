@@ -10,5 +10,7 @@ export interface ConnectedStoreTypes {
 
 export const useConnectedStore = create<ConnectedStoreTypes>((set) => ({
   connected: false,
-  setConnected: (connected: boolean) => { set({ connected: connected }) }
+  setConnected: (connected: boolean) => {
+    set({ connected: connected });
+  },
 }));

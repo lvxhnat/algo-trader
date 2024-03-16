@@ -11,7 +11,7 @@ async def lifespan(app: FastAPI):
     '''startup and shutdown events'''
     asyncio.create_task(ibkr_client.connect())
     yield
-    await ibkr_client.disconnect()
+    ibkr_client.disconnect()
     print("Shutting down IBKR servers.")
 
 

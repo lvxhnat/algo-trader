@@ -1,7 +1,15 @@
-import request from "services";
-import { ENDPOINTS } from "common/endpoints";
+import PortfolioPositions from "./PortfolioPositions";
 
-export interface PortfolioPositionsData {
+export interface PositionTableData {
+  [symbol: string]: PortfolioPositions;
+}
+
+export interface PortfolioWebsocketData {
+  status: "initialise" | "change";
+  data: PortfolioPositions[];
+}
+
+export interface PortfolioPositions {
   symbol: string;
   average_cost: number;
   contract_id: number;
@@ -9,7 +17,7 @@ export interface PortfolioPositionsData {
   asset_type: string;
   exchange: string;
   position: number;
+  market_price: number;
+  market_value: number;
+  unrealised_pnl: number;
 }
-
-export const getPortfolioPositions = () =>
-  request().get<PortfolioPositionsData[]>(ENDPOINTS.PORTFOLIO_POSITIONS);

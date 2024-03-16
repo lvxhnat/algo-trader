@@ -12,7 +12,10 @@ export interface ContainerWrapperProps {
 }
 
 export default function ContainerWrapper(props: ContainerWrapperProps) {
-  const [connected, setConnected] = useConnectedStore(state => [state.connected, state.setConnected])
+  const [connected, setConnected] = useConnectedStore((state) => [
+    state.connected,
+    state.setConnected,
+  ]);
 
   if (window.location.href === "/")
     console.log(`
