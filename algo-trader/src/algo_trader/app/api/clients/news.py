@@ -43,7 +43,7 @@ async def request_historical_news_headlines(
     news_providers = await ibkr_client.reqNewsProvidersAsync()
     provider_codes = "+".join([provider.code for provider in news_providers])
     
-    headlines: List[HistoricalNews] = await ibkr_client.reqHistoricalNewsAsync(contract_id, provider_codes, start, end, 10)
+    headlines: List[HistoricalNews] = await ibkr_client.reqHistoricalNewsAsync(contract_id, provider_codes, start, end, 30)
 
     serialise_headlines = lambda headline: {
         "datetime": headline.time, 

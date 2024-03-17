@@ -1,5 +1,8 @@
+from typing import List
+from datetime import datetime
 from pydantic import BaseModel
-from ib_insync import ContractDetails
+from ib_insync import ContractDetails, Contract, Ticker
+from algo_trader.app.config.base_config import ibkr_client
 
 async def _parse_hours(hours): 
     # Splitting the string into a list of days and hours
@@ -38,3 +41,11 @@ async def serialise_contractdetails(contract_detail: ContractDetails) -> Seriali
         "trading_hours": await _parse_hours(contract_detail.tradingHours),
         "liquid_hours": await _parse_hours(contract_detail.liquidHours),
     }
+
+async def request_last_price(
+    contract_id: str,
+) -> float:
+    contract = Contract(conId=contract_id)
+    await ibkr_client.qualifyContractsAsync(contract)
+    data: List[Ticker] = await ibkr_client.reqTickersAsync(contract)
+    return data[0].close
