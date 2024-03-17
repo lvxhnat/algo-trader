@@ -43,18 +43,18 @@ const OHLCChart: React.FC<OHLCChartProps> = ({
         .scaleBand()
         .domain(data.map((d) => d.date.toISOString()))
         .range([margin.left, width - margin.right]) // Adjust for margins
-        .padding(1)
-        
-        const y = d3
+        .padding(1);
+
+      const y = d3
         .scaleLinear()
         .domain([
           Math.min(...data.map((d) => d.low)),
           Math.max(...data.map((d) => d.high)),
         ])
         .range([height - margin.bottom, margin.top]); // Invert range for y
-        
-        const yAxis = d3.axisLeft(y).ticks(10);
-        const xAxis = d3.axisBottom(x).ticks(10).tickSize(height);
+
+      const yAxis = d3.axisLeft(y).ticks(10);
+      const xAxis = d3.axisBottom(x).ticks(10).tickSize(height);
 
       svg
         .append("g")
@@ -90,7 +90,7 @@ const OHLCChart: React.FC<OHLCChartProps> = ({
             ? d3.schemeSet1[2]
             : d3.schemeSet1[8]
         )
-        .append("title")
+        .append("title");
     },
     [data, width, height]
   );

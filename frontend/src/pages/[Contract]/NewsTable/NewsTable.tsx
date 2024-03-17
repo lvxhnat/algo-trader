@@ -16,7 +16,6 @@ import { ROUTES } from "common/constant";
 import { getHistoricalNews } from "../requests";
 import { StyledTableRow } from "components/Tables/BaseTable/StyledTableRow";
 
-
 const StyledTableCell: React.FC<{
   children?: React.ReactNode;
   color?: string;
@@ -36,15 +35,15 @@ const StyledTableCell: React.FC<{
 };
 
 interface NewsRowProps {
-    symbol: string
-    contract_id: string
+  symbol: string;
+  contract_id: string;
 }
 
 interface NewsTableData {
-    article_id: string 
-    datetime: string
-    headline: string
-    provider_code: string
+  article_id: string;
+  datetime: string;
+  headline: string;
+  provider_code: string;
 }
 
 function NewsRow(props: NewsRowProps) {
@@ -61,22 +60,23 @@ function NewsRow(props: NewsRowProps) {
         },
       }}
       onClick={() => navigate(`${ROUTES.CONTRACT}/${props.contract_id}`)}
-    >
-    </TableRow>
+    ></TableRow>
   );
-    };
-React.memo(NewsRow)
+}
+React.memo(NewsRow);
 
 interface NewsTableProps {
-    conId: string
+  conId: string;
 }
 
 export default function NewsTable(props: NewsTableProps) {
-  const [historicalNews, setHistoricalNews] = React.useState<NewsTableData[]>([]);
+  const [historicalNews, setHistoricalNews] = React.useState<NewsTableData[]>(
+    []
+  );
   const connected = useConnectedStore((state) => state.connected);
 
   React.useEffect(() => {
-    getHistoricalNews(props.conId).then((res) => setHistoricalNews(res.data))
+    // getHistoricalNews(props.conId).then((res) => setHistoricalNews(res.data));
   }, [connected]);
 
   return (
@@ -95,11 +95,19 @@ export default function NewsTable(props: NewsTableProps) {
         <TableBody>
           {historicalNews.map((entry) => {
             return (
-                <StyledTableRow>
-                    <StyledTableCell size="small"> {moment(new Date(entry.datetime)).format("DD MMM YY HH:mm")} </StyledTableCell>
-                    <StyledTableCell  size="large"> {entry.headline} </StyledTableCell>
-                </StyledTableRow>
-            )
+              <StyledTableRow>
+                <StyledTableCell size="small">
+                  {" "}
+                  {moment(new Date(entry.datetime)).format(
+                    "DD MMM YY HH:mm"
+                  )}{" "}
+                </StyledTableCell>
+                <StyledTableCell size="large">
+                  {" "}
+                  {entry.headline}{" "}
+                </StyledTableCell>
+              </StyledTableRow>
+            );
           })}
         </TableBody>
       </Table>

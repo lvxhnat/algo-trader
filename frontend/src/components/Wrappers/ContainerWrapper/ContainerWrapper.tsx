@@ -11,12 +11,54 @@ export interface ContainerWrapperProps {
   hideNavigate?: boolean;
 }
 
-export default function ContainerWrapper(props: ContainerWrapperProps) {
+function connectWebsocket(setConnect: (type: boolean) => void) {
+  let ws = new WebSocket(
+    `${process.env.REACT_APP_WEBSOCKET_URL!}/health`
+  );
+
+  ws.onmessage = function(event) {
+    setConnect(JSON.parse(event.data).connected_status);
+  };
+
+  ws.onerror = function(err: any) {
+    setConnect(false)
+    ws.close()
+    setTimeout(function() {
+      connectWebsocket(setConnect);
+    }, 2000);
+  };
+  return ws
+}
+
+function DisconnectAlert() {
   const [connected, setConnected] = useConnectedStore((state) => [
     state.connected,
     state.setConnected,
   ]);
 
+  React.useEffect(() => {
+    let socket: WebSocket;
+
+    socket = connectWebsocket(setConnected)
+    if (!socket.readyState) {
+      setConnected(false);
+    }
+
+    return () => {
+      if (socket) socket.close();
+      console.log("PortfolioPositions WebSocket Connection Closed");
+    };
+  }, []);
+  
+  return !connected ? (
+    <Snackbar open={true}>
+      <Alert severity="error"> {ALERTS.OFFLINE} </Alert>
+    </Snackbar>
+  ) : null
+}
+
+export default function ContainerWrapper(props: ContainerWrapperProps) {
+  
   if (window.location.href === "/")
     console.log(`
     ______   __                              __                               __                     
@@ -32,16 +74,6 @@ export default function ContainerWrapper(props: ContainerWrapperProps) {
                \$$    $$                                                                           
                 \$$$$$$                                                                            
     `);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      getConnectionHealth().then((res) => {
-        if (res !== undefined) return setConnected(res.data.connected_status);
-      });
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <Stack
@@ -65,11 +97,7 @@ export default function ContainerWrapper(props: ContainerWrapperProps) {
       >
         {props.children}
       </div>
-      {!connected ? (
-        <Snackbar open={true}>
-          <Alert severity="error"> {ALERTS.OFFLINE} </Alert>
-        </Snackbar>
-      ) : null}
+      <DisconnectAlert />
     </Stack>
   );
 }

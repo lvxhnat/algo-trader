@@ -22,5 +22,5 @@ export interface ContractInfo {
 export const getHistoricalData = (contractId: string) =>
   request().get(`${ROUTES.CONTRACT}/${contractId}/historical`);
 
-
-export const getHistoricalNews = (contractId: string) => request().get(`${ROUTES.CONTRACT}/${contractId}/news`);
+export const getHistoricalNews = (contractId: string) =>
+  request().get(`${ROUTES.CONTRACT}/${contractId}/news`);
