@@ -1,7 +1,6 @@
-from typing import List
-from datetime import datetime
+import asyncio
 from pydantic import BaseModel
-from ib_insync import ContractDetails, Contract, Ticker
+from ib_insync import ContractDetails, Contract
 from algo_trader.app.config.base_config import ibkr_client
 
 async def _parse_hours(hours): 
@@ -42,10 +41,27 @@ async def serialise_contractdetails(contract_detail: ContractDetails) -> Seriali
         "liquid_hours": await _parse_hours(contract_detail.liquidHours),
     }
 
-async def request_last_price(
-    contract_id: str,
-) -> float:
+async def request_last_price(contract_id: str):
+    
+    dividends = "456"
+    high_lows = "165"
+    last_prices = "233"
+
     contract = Contract(conId=contract_id)
+    ibkr_client.reqMarketDataType(2) # Needs to be frozen data, or last will be nan
     await ibkr_client.qualifyContractsAsync(contract)
-    data: List[Ticker] = await ibkr_client.reqTickersAsync(contract)
-    return data[0].close
+
+    request_types = ",".join([dividends, high_lows, last_prices])
+    data = ibkr_client.reqMktData(contract, request_types)
+    await asyncio.sleep(3)
+
+    return {
+        "last": data.last,
+        "last_size": data.lastSize,
+        "last_bid": data.bid,
+        "last_bid_size": data.bidSize, 
+        "last_ask": data.ask, 
+        "last_ask_size": data.askSize, 
+        "dividends": data.dividends,
+    }
+

@@ -53,6 +53,7 @@ export enum ColorsEnum {
   azure1 = "#EDFCFC",
   gunmetal = "#333333",
   black = "#000000",
+  grey = "#808080",
   warmgray1 = "#55524F",
   warmgray2 = "#77716C",
   warmgray3 = "#999088",

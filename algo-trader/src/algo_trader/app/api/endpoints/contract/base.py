@@ -49,6 +49,7 @@ async def get_price_stream(
     websocket: WebSocket,
 ):
     await websocket.accept()
-    # while True:
-    #     await websocket.send_json({"price": await request_last_price(contractId)})
-    #     await asyncio.sleep(1)
+    while True:
+        data = await request_last_price(contractId)
+        await websocket.send_json(data)
+        await asyncio.sleep(2)

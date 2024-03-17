@@ -12,9 +12,21 @@ import { Grid, Typography } from "@mui/material";
 import { capitalizeString } from "common/helper/general";
 import { currencyToEmoji } from "common/helper/countries";
 import NewsTable from "./NewsTable";
+import { ColorsEnum } from "common/theme";
+import { useThemeStore } from "store/theme";
+
+interface PriceInfo {
+  last: number
+  last_size: number
+  last_bid: number
+  last_bid_size: number
+  last_ask: number 
+  last_ask_size: number
+  dividends: number
+}
 
 function connectPriceSocket(
-  setPrice: (value: string) => void,
+  setPriceInfo: (value: PriceInfo) => void,
   contractId: string
 ) {
   let ws = new WebSocket(
@@ -22,23 +34,47 @@ function connectPriceSocket(
   );
 
   ws.onmessage = function(event) {
-    const price = JSON.parse(event.data).price
-    console.log(price)
-    if (price) setPrice(`$${price.toFixed(2)}`);
+    setPriceInfo(JSON.parse(event.data));
   };
 
   ws.onerror = function(err: any) {
     ws.close()
     setTimeout(function() {
-      connectPriceSocket(setPrice, contractId);
+      connectPriceSocket(setPriceInfo, contractId);
     }, 2000);
   };
   return ws
 }
 
+function PriceInfoShower(props: { contractId: string }) {
+
+  const theme = useThemeStore();
+  const [priceInfo, setPriceInfo] = React.useState<PriceInfo>({} as PriceInfo);
+
+  React.useEffect(() => {
+    connectPriceSocket(setPriceInfo, props.contractId)
+  }, [])
+
+  return ( priceInfo.last ?
+    (
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-end", paddingTop: 10, paddingBottom: 5 }}>
+        <Typography variant="h1" style={{ color: theme.mode === 'dark' ? ColorsEnum.grey : ColorsEnum.darkGrey }}>
+          ${priceInfo.last.toFixed(2)}
+        </Typography>
+        <Typography variant="subtitle1" style={{ color: theme.mode === 'dark' ? ColorsEnum.grey : ColorsEnum.darkGrey }}>
+          Last Bid: ${priceInfo.last_bid.toFixed(2)}
+        </Typography>
+        <Typography variant="subtitle1" style={{ color: theme.mode === 'dark' ? ColorsEnum.grey : ColorsEnum.darkGrey }}>
+          Last Ask: ${priceInfo.last_ask.toFixed(2)}
+        </Typography>
+      </div>
+    )
+     : null
+  )
+}
+
 export default function Contract() {
   const params = useParams();
-  const [price, setPrice] = React.useState<any>();
 
   const [contractData, setContractData] = React.useState<ContractInfo>();
   const [historicalData, setHistoricalData] = React.useState<OHLCData[]>([]);
@@ -47,11 +83,12 @@ export default function Contract() {
   React.useEffect(() => {
     getContractInfo(params.conId!).then((res) => setContractData(res.data));
     getHistoricalData(params.conId!).then((res) => setHistoricalData(res.data));
-    connectPriceSocket(setPrice, params.conId!)
+    
   }, []);
 
   return (
     <ContainerWrapper>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 10}}>
       <Typography variant="h2">
         {" "}
         {contractData
@@ -60,10 +97,7 @@ export default function Contract() {
             )}`
           : null}{" "}
       </Typography>
-      <Typography variant="h1">
-        {price}
-      </Typography>
-      <Typography variant="subtitle1">
+      <Typography variant="subtitle2">
         {" "}
         {contractData
           ? `${contractData.exchange} | ${
@@ -73,6 +107,9 @@ export default function Contract() {
             } ${contractData.currency}`
           : null}{" "}
       </Typography>
+      </div>
+      
+      <PriceInfoShower contractId={params.conId!}/>
       <Grid container>
         <Grid item xs={9}>
           <OHLCChart data={historicalData} />
