@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import BaseModel
-from ib_insync import Contract, HistoricalNews
+from ib_insync import HistoricalNews
 
 import re
 from datetime import datetime, timedelta
@@ -12,9 +12,9 @@ class NewsHeadline(BaseModel):
     article_id: str
     headline: str
 
-def request_historical_news_headlines(
-    contract: Contract,
-    start: datetime = datetime.today() - timedelta(days = 5),
+async def request_historical_news_headlines(
+    contract_id: str,
+    start: datetime = datetime.today() - timedelta(days = 10),
     end: datetime = datetime.today(),
 ) -> List[NewsHeadline]:
     
@@ -40,22 +40,19 @@ def request_historical_news_headlines(
     ==============
     https://github.com/erdewit/ib_insync/issues/244
     """
+    news_providers = await ibkr_client.reqNewsProvidersAsync()
+    provider_codes = "+".join([provider.code for provider in news_providers])
+    
+    headlines: List[HistoricalNews] = await ibkr_client.reqHistoricalNewsAsync(contract_id, provider_codes, start, end, 10)
 
-    provider_codes: str = ibkr_client.news_provider_codes
-
-    ibkr_client.qualifyContracts(contract)
-    headlines: List[HistoricalNews] = ibkr_client.reqHistoricalNews(contract.conId, provider_codes, start, end, 10)
-
-    clean_headline = lambda s: re.sub(r'\{.*?\}', '', s.replace("!", ""))
     serialise_headlines = lambda headline: {
         "datetime": headline.time, 
         "provider_code": headline.providerCode, 
         "article_id": headline.articleId,
-        "headline": clean_headline(headline.headline),
+        "headline": re.sub(r'\{.*?\}', '', headline.headline.replace("!", "")),
     }
-
-    return [*map(serialise_headlines, headlines)]
-
-if __name__ == '__main__':
-    from ib_insync import Stock
-    print(request_historical_news_headlines(Stock('AMD', 'SMART', 'USD')))
+    if headlines:
+        return [*map(serialise_headlines, headlines)]
+    else: 
+        return []
+    

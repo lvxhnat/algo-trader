@@ -1,12 +1,7 @@
 export const ROUTES = {
   LANDING: "/",
-  SIGNIN: "/signin",
-  SIGNUP: "/signup",
-  FORGOT_PASSWORD: "/forgot-password",
-  ECONOMIC_DATA: "/economic",
   ABOUT: "/about",
-  PORTFOLIO: "/portfolio",
-  USER_API_KEYS: "/user/apikeys",
+  CONTRACT: "/contract",
 };
 
 export const ASSET_TYPES = {

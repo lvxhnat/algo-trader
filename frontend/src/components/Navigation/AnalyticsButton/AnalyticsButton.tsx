@@ -62,7 +62,7 @@ export default function AnalyticsButton() {
           icon={<GiLeafSwirl style={{ fontSize: 20 }} />}
           title="Watchlist & Analytics"
           description="Add stocks to watchlist and check for correlations"
-          onClick={() => handleClose(ROUTES.PORTFOLIO)}
+          onClick={() => handleClose("/")}
         />
       </S.StyledMenu>
     </React.Fragment>

@@ -7,24 +7,21 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { PortfolioWebsocketData, PositionTableData } from "./requests";
+import {
+  PortfolioPositions,
+  PortfolioWebsocketData,
+  PositionTableData,
+} from "./requests";
 import { useConnectedStore } from "store/general/general";
 import { ColorsEnum } from "common/theme";
 import { numberWithCommas } from "common/helper/general";
-
-interface Position {
-  symbol: string;
-  position: number;
-  average_cost: number;
-  market_price: number;
-  market_value: number;
-  unrealised_pnl: number;
-  exchange: string;
-  currency: string;
-}
+import { currencyToEmoji } from "common/helper/countries";
+import { useThemeStore } from "store/theme";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "common/constant";
 
 interface PortfolioRowProps {
-  entry: Position;
+  entry: PortfolioPositions;
 }
 
 const StyledTableCell: React.FC<{
@@ -46,15 +43,27 @@ const StyledTableCell: React.FC<{
 };
 
 const PortfolioRow: React.FC<PortfolioRowProps> = React.memo(({ entry }) => {
-  const unrealised_pnl = entry.unrealised_pnl;
+  const theme = useThemeStore();
+  const navigate = useNavigate();
+
+  const unrealised_pnl: number = entry.unrealised_pnl;
   const pnlColor = unrealised_pnl > 0 ? ColorsEnum.green : ColorsEnum.red;
   const pnlString =
     unrealised_pnl > 0
       ? `$${unrealised_pnl}`
-      : `$ -(${unrealised_pnl.toFixed(2).slice(1)})`;
-
+      : `$(${unrealised_pnl.toFixed(2).slice(1)})`;
   return (
-    <TableRow key={`${entry.symbol}-outstandingPositions`}>
+    <TableRow
+      key={`${entry.symbol}-outstandingPositions`}
+      sx={{
+        "&:hover": {
+          cursor: "pointer",
+          backgroundColor:
+            theme.mode === "light" ? ColorsEnum.coolgray6 : ColorsEnum.darkGrey,
+        },
+      }}
+      onClick={() => navigate(`${ROUTES.CONTRACT}/${entry.contract_id}`)}
+    >
       <StyledTableCell>{entry.symbol}</StyledTableCell>
       <StyledTableCell>{entry.position}</StyledTableCell>
       <StyledTableCell>
@@ -68,34 +77,46 @@ const PortfolioRow: React.FC<PortfolioRowProps> = React.memo(({ entry }) => {
       </StyledTableCell>
       <StyledTableCell color={pnlColor}>{pnlString}</StyledTableCell>
       <StyledTableCell>{entry.exchange}</StyledTableCell>
-      <StyledTableCell>{entry.currency}</StyledTableCell>
+      <StyledTableCell>
+        {`${currencyToEmoji[entry.currency as keyof typeof currencyToEmoji]} ${
+          entry.currency
+        }`}
+      </StyledTableCell>
     </TableRow>
   );
 });
 
-export default function PortfolioPositions() {
+export default function PortfolioPositionsTable() {
   const [activePositions, setActivePositions] =
     React.useState<PositionTableData>({});
-
+  const [socket, setWebSocket] = React.useState<WebSocket>();
   const connected = useConnectedStore((state) => state.connected);
 
   React.useEffect(() => {
-    const socket = new WebSocket(
-      `${process.env.REACT_APP_WEBSOCKET_URL!}/portfolio/holdings`
-    );
-    socket.addEventListener("open", (event) => {
-      socket.send("Connection established");
-    });
-    socket.addEventListener("message", (event) => {
-      const portfolioData: PortfolioWebsocketData = JSON.parse(event.data);
-      if (portfolioData.status === "initialise") {
-        const d: PositionTableData = {};
-        portfolioData.data.map((entry) => {
-          d[entry.symbol] = entry;
-        });
-        return setActivePositions(d);
-      }
-    });
+    if (!socket) {
+      const socket: WebSocket = new WebSocket(
+        `${process.env.REACT_APP_WEBSOCKET_URL!}/portfolio/holdings`
+      );
+      socket.addEventListener("open", (event) => {
+        socket.send("Connection established");
+      });
+      socket.addEventListener("message", (event) => {
+        const portfolioData: PortfolioWebsocketData = JSON.parse(event.data);
+        if (portfolioData.status === "initialise") {
+          const d: PositionTableData = {};
+          portfolioData.data.map((entry) => {
+            d[entry.symbol] = entry;
+          });
+          setActivePositions(d);
+        }
+        setWebSocket(socket);
+
+        return () => {
+          socket.close();
+          console.log("PortfolioPositions WebSocket Connection Closed");
+        };
+      });
+    }
   }, [connected]);
 
   return (

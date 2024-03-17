@@ -30,4 +30,6 @@ async def serialise_portfolioitem(portfolio_item: PortfolioItem) -> SerialisedPo
 
 if __name__ == '__main__':
     ibkr_client.sync_connect()
-    print(ibkr_client.accountValues())
+    ibkr_client.reqNewsBulletins(allMessages=True)
+    ibkr_client.sleep(5)
+    print(ibkr_client.newsBulletins())

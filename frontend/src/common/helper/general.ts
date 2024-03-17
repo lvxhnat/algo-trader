@@ -27,6 +27,7 @@ export const stringToColour = (str: string) => {
 
 export const capitalizeString = (colName: string) =>
   colName
+    .toLowerCase()
     .split(" ")
     .map((token: string) => token.charAt(0).toUpperCase() + token.slice(1))
     .join(" ");

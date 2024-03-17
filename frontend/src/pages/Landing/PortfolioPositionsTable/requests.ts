@@ -1,4 +1,4 @@
-import PortfolioPositions from "./PortfolioPositions";
+import PortfolioPositions from "./PortfolioPositionsTable";
 
 export interface PositionTableData {
   [symbol: string]: PortfolioPositions;
