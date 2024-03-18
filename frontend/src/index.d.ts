@@ -1,2 +1,2 @@
 declare module "*.png";
-declare module 'react-stockcharts';
+declare module "react-stockcharts";

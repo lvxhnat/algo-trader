@@ -1,11 +1,12 @@
 import asyncio
 from typing import List
+from datetime import datetime
 from fastapi import APIRouter, WebSocket
 from ib_insync import ContractDetails, Contract
 
 from algo_trader.app.config.base_config import ibkr_client
 from algo_trader.app.api.clients.news import request_historical_news_headlines
-from algo_trader.app.api.clients.contracts import serialise_contractdetails, SerialisedContractDetails, request_last_price
+from algo_trader.app.api.clients.contracts import serialise_contractdetails, SerialisedContractDetails, request_last_price, parse_hours
 
 from algo_trader.app.api.endpoints.contract.models import TickerInfoDTO
 
@@ -49,6 +50,19 @@ async def get_price_stream(
     websocket: WebSocket,
 ):
     await websocket.accept()
+    contract = Contract(conId=contractId)
+    await ibkr_client.qualifyContractsAsync(contract)
+    contract_details: List[ContractDetails] = await ibkr_client.reqContractDetailsAsync(contract)
+    contract_details: ContractDetails = contract_details[0]
+
+    # Check if market is open or not
+    liquid_hours = await parse_hours(contract_details.liquidHours)
+    
+    date_today = datetime.today().strftime("%Y%m%d")
+    
+    market_open = liquid_hours[date_today]['start']
+    market_close = liquid_hours[date_today]['start'].replace(date_today + ":", "")
+    
     while True:
         data = await request_last_price(contractId)
         await websocket.send_json(data)

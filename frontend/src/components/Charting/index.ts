@@ -1,3 +1,3 @@
 import CandleStick from "./CandleStick";
 
-export default CandleStick
+export default CandleStick;

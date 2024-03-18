@@ -10,8 +10,8 @@ export interface ContractInfo {
   long_name: string;
   sub_category: string;
   time_zone: string;
-  liquid_hours: Object;
-  trading_hours: Object;
+  liquid_hours: { [date: string]: { start: string; end: string } };
+  trading_hours: { [date: string]: { start: string; end: string } };
   symbol: string;
   contract_id: string;
   exchange: string;

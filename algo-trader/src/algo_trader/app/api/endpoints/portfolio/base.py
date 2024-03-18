@@ -21,6 +21,8 @@ async def get_portfolio_holdings(websocket: WebSocket):
     await websocket.send_json({"status": "initialise", "data": positions})
 
     async def send_portfolio_event(portfolio_item: PortfolioItem):
+        print("Portfolio Event")
         await websocket.send_json({"status": "change", "data": await serialise_portfolioitem(portfolio_item)})
 
     ibkr_client.updatePortfolioEvent += send_portfolio_event
+

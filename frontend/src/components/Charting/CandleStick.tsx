@@ -1,7 +1,5 @@
-import React from 'react'
+import React from "react";
 
 export default function CandleStick() {
-  return (
-    <div>CandleStick</div>
-  )
+  return <div>CandleStick</div>;
 }

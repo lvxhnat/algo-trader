@@ -12,22 +12,20 @@ export interface ContainerWrapperProps {
 }
 
 function connectWebsocket(setConnect: (type: boolean) => void) {
-  let ws = new WebSocket(
-    `${process.env.REACT_APP_WEBSOCKET_URL!}/health`
-  );
+  let ws = new WebSocket(`${process.env.REACT_APP_WEBSOCKET_URL!}/health`);
 
-  ws.onmessage = function(event) {
+  ws.onmessage = function (event) {
     setConnect(JSON.parse(event.data).connected_status);
   };
 
-  ws.onerror = function(err: any) {
-    setConnect(false)
-    ws.close()
-    setTimeout(function() {
+  ws.onerror = function (err: any) {
+    setConnect(false);
+    ws.close();
+    setTimeout(function () {
       connectWebsocket(setConnect);
     }, 2000);
   };
-  return ws
+  return ws;
 }
 
 function DisconnectAlert() {
@@ -39,7 +37,7 @@ function DisconnectAlert() {
   React.useEffect(() => {
     let socket: WebSocket;
 
-    socket = connectWebsocket(setConnected)
+    socket = connectWebsocket(setConnected);
     if (!socket.readyState) {
       setConnected(false);
     }
@@ -49,16 +47,15 @@ function DisconnectAlert() {
       console.log("PortfolioPositions WebSocket Connection Closed");
     };
   }, []);
-  
+
   return !connected ? (
     <Snackbar open={true}>
       <Alert severity="error"> {ALERTS.OFFLINE} </Alert>
     </Snackbar>
-  ) : null
+  ) : null;
 }
 
 export default function ContainerWrapper(props: ContainerWrapperProps) {
-  
   if (window.location.href === "/")
     console.log(`
     ______   __                              __                               __                     

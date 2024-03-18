@@ -1,5 +1,6 @@
+from typing import List
 from pydantic import BaseModel
-from ib_insync import PortfolioItem
+from ib_insync import PortfolioItem, AccountValue
 from algo_trader.app.config.base_config import ibkr_client
 
 class SerialisedPortfolioItem(BaseModel):
@@ -27,6 +28,25 @@ async def serialise_portfolioitem(portfolio_item: PortfolioItem) -> SerialisedPo
             "market_value": portfolio_item.marketValue,
             "unrealised_pnl": portfolio_item.unrealizedPNL, 
         }
+
+def account_rundowns():
+    
+    account_values: List[AccountValue] = ibkr_client.accountValues()
+    
+    account_rundowns = {}
+
+    for account_value in account_values:
+        currency: str = account_value.currency
+        if account_value.tag in account_rundowns:
+            account_rundowns[account_value.tag][currency] = account_value.value
+        else:
+            account_rundowns[account_value.tag] = {}
+            if currency:
+                account_rundowns[account_value.tag][currency] = account_value.value
+            else: 
+                account_rundowns[account_value.tag] = account_value.value
+
+    return account_rundowns
 
 if __name__ == '__main__':
     ibkr_client.sync_connect()
