@@ -13,7 +13,7 @@ class SerialisedPortfolioItem(BaseModel):
     market_price: float
     market_value: float
     unrealised_pnl: float
-
+    daily_pnl: float
 
 async def serialise_portfolioitem(portfolio_item: PortfolioItem) -> SerialisedPortfolioItem:
     contract = portfolio_item.contract

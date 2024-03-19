@@ -1,13 +1,14 @@
 import asyncio
-from typing import List
-from datetime import datetime
-from fastapi import APIRouter, WebSocket
+from typing import List, Optional
+from starlette.websockets import WebSocketState
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from ib_insync import ContractDetails, Contract
 
 from algo_trader.app.config.base_config import ibkr_client
 from algo_trader.app.api.clients.news import request_historical_news_headlines
-from algo_trader.app.api.clients.contracts import serialise_contractdetails, SerialisedContractDetails, request_last_price, parse_hours
+from algo_trader.app.api.clients.contracts import serialise_contractdetails, SerialisedContractDetails, serialise_tickerdata, parse_hours
 
+from algo_trader.app.api.endpoints.contract.params import TickerHistoricalParams
 from algo_trader.app.api.endpoints.contract.models import TickerInfoDTO
 
 tag = "contract"
@@ -31,15 +32,18 @@ async def get_ticker_info(contractId: str) -> TickerInfoDTO:
     return contract_details
 
 @router.get("/{contractId}/historical")
-async def get_ticker_historical(contractId: str):
+async def get_ticker_historical(
+    contractId: str,
+    params: Optional[TickerHistoricalParams],
+):
     contract = Contract(conId=contractId)
     await ibkr_client.qualifyContractsAsync(contract)
     data = await ibkr_client.reqHistoricalDataAsync(
         contract,
         '', 
-        barSizeSetting='15 mins', 
-        durationStr='5 D', 
-        whatToShow='MIDPOINT', 
+        barSizeSetting=params.interval, 
+        durationStr=params.duration, 
+        whatToShow=params.price_type, 
         useRTH=True
     )
     return data
@@ -49,21 +53,37 @@ async def get_price_stream(
     contractId: str,
     websocket: WebSocket,
 ):
+    
     await websocket.accept()
+
+    def on_tick_update(tickers):
+        for ticker in tickers:
+            if ticker.contract.conId == int(contractId):
+                asyncio.create_task(send_data(ticker))
+
+    async def send_data(ticker):
+        if websocket.application_state == WebSocketState.CONNECTED:
+            data = await serialise_tickerdata(ticker, status="delayed")  # Ensure this function is async or adjust accordingly
+            await websocket.send_json(data)
+
     contract = Contract(conId=contractId)
     await ibkr_client.qualifyContractsAsync(contract)
-    contract_details: List[ContractDetails] = await ibkr_client.reqContractDetailsAsync(contract)
-    contract_details: ContractDetails = contract_details[0]
 
-    # Check if market is open or not
-    liquid_hours = await parse_hours(contract_details.liquidHours)
+    dividends, high_lows, last_prices = "456", "165", "233"
+    request_types = ",".join([dividends, high_lows, last_prices])
+    ticker = ibkr_client.reqMktData(contract, request_types)
+    await asyncio.sleep(2)
+    ibkr_client.pendingTickersEvent += on_tick_update
+    await send_data(ticker)
     
-    date_today = datetime.today().strftime("%Y%m%d")
-    
-    market_open = liquid_hours[date_today]['start']
-    market_close = liquid_hours[date_today]['start'].replace(date_today + ":", "")
-    
-    while True:
-        data = await request_last_price(contractId)
-        await websocket.send_json(data)
-        await asyncio.sleep(2)
+    try:
+        while True:
+            await asyncio.sleep(10)  # Keep the connection alive
+    except WebSocketDisconnect:
+        print(f"{contract.symbol} Price Socket Disconnected")
+    except RuntimeError as e:
+        print(f"RuntimeError Encountered on {contract.symbol} Price Socket.")
+    finally:
+        print("Cleaning up {contract.symbol} Price Socket.")
+        ibkr_client.cancelMktData(contract)
+        ibkr_client.pendingTickersEvent -= on_tick_update

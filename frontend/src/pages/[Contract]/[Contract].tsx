@@ -17,7 +17,7 @@ import { ColorsEnum } from "common/theme";
 import { useThemeStore } from "store/theme";
 
 interface PriceInfo {
-  status: "ok" | "unsubscribed";
+  status: "live" | "frozen" | "delayed" | "delayed frozen" | "error";
   last: number;
   last_size: number;
   last_bid: number;
@@ -36,7 +36,7 @@ function connectPriceSocket(
   );
 
   ws.onmessage = function (event) {
-    console.log(event.data);
+    console.log(event.data)
     setPriceInfo(JSON.parse(event.data));
   };
 
@@ -61,7 +61,7 @@ function PriceInfoShower(props: { contractId: string }) {
     };
   }, []);
 
-  return priceInfo.status === "ok" ? (
+  return priceInfo.status !== "error" && priceInfo.status ? (
     <div
       style={{
         display: "flex",
@@ -77,7 +77,7 @@ function PriceInfoShower(props: { contractId: string }) {
           color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
         }}
       >
-        ${priceInfo.last.toFixed(2)}
+        ${priceInfo.last ? priceInfo.last.toFixed(2) : "-"}
       </Typography>
       <Typography
         variant="subtitle1"
@@ -85,7 +85,7 @@ function PriceInfoShower(props: { contractId: string }) {
           color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
         }}
       >
-        Last Bid: ${priceInfo.last_bid.toFixed(2)}
+        Last Bid: ${priceInfo.last_bid ? priceInfo.last_bid.toFixed(2) : "-"}
       </Typography>
       <Typography
         variant="subtitle1"
@@ -93,7 +93,7 @@ function PriceInfoShower(props: { contractId: string }) {
           color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
         }}
       >
-        Last Ask: ${priceInfo.last_ask.toFixed(2)}
+        Last Ask: ${priceInfo.last_ask ? priceInfo.last_ask.toFixed(2) : "-"}
       </Typography>
     </div>
   ) : (
@@ -114,6 +114,7 @@ export default function Contract() {
 
   React.useEffect(() => {
     getContractInfo(params.conId!).then((res) => setContractData(res.data));
+    console.log(contractData)
     getHistoricalData(params.conId!).then((res) => setHistoricalData(res.data));
   }, []);
 
@@ -128,25 +129,16 @@ export default function Contract() {
               )}`
             : null}{" "}
         </Typography>
-        {contractData ? (
-          <Chip
-            label={contractData.asset_type}
-            size="small"
-            sx={{ fontSize: 8 }}
-          />
-        ) : null}
       </div>
       <PriceInfoShower contractId={params.conId!} />
       <div>
         <Typography variant="subtitle2">
-          {" "}
           {contractData
             ? `${contractData.exchange} | ${
                 currencyToEmoji[
                   contractData.currency as keyof typeof currencyToEmoji
                 ]
               }${contractData.currency} 
-            | ${contractData.industry} 
             | Liquid Hours: ${
               contractData.liquid_hours[moment(new Date()).format("YYYYMMDD")]
                 .start
@@ -167,7 +159,7 @@ export default function Contract() {
         >
           {" "}
           {contractData
-            ? `${contractData.industry} | ${contractData.category} | ${contractData.sub_category}`
+            ? [contractData.industry, contractData.category, contractData.sub_category].filter(item => item).join(" | ")
             : null}{" "}
         </Typography>
       </div>

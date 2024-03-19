@@ -5,8 +5,7 @@ export interface PositionTableData {
 }
 
 export interface PortfolioWebsocketData {
-  status: "initialise" | "change";
-  data: PortfolioPositions[];
+  data: PortfolioPositions;
 }
 
 export interface PortfolioPositions {
@@ -20,4 +19,5 @@ export interface PortfolioPositions {
   market_price: number;
   market_value: number;
   unrealised_pnl: number;
+  daily_pnl: number;
 }

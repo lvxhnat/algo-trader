@@ -56,3 +56,5 @@ async def request_historical_news_headlines(
     else: 
         return []
     
+if __name__ == '__main__':
+    ibkr_client.sync_connect()
