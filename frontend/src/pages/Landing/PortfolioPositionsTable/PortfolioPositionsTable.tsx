@@ -106,23 +106,24 @@ export default function PortfolioPositionsTable() {
       webSocketRef.current.addEventListener("message", (event) => {
         const portfolioData: PortfolioWebsocketData = JSON.parse(event.data);
         const data: PortfolioPositions = portfolioData.data
-        // If the symbol exists and the daily_pnl returned is null, we keep the previous value
-        const keyExists = Object.keys(activePositions).includes(data.symbol)
-        console.log(keyExists, data, data.daily_pnl)
-        if (keyExists && !data.daily_pnl) data.daily_pnl = activePositions[data.symbol].daily_pnl
         // Set to the positions
-        setActivePositions(currentPositions => ({
+        setActivePositions(currentPositions => { 
+          // If the symbol exists and the daily_pnl returned is null, we keep the previous value
+          const keyExists = Object.keys(currentPositions).includes(data.symbol)
+          console.log(keyExists, data, data.daily_pnl, currentPositions)
+          if (keyExists && !data.daily_pnl) data.daily_pnl = currentPositions[data.symbol].daily_pnl
+          return ({
           ...currentPositions,
           [data.symbol]: data
-        }));
-          
-        return () => {
-          webSocketRef.current?.close();
-          webSocketRef.current = null;
-          console.log("PortfolioPositions WebSocket Connection Closed");
-        };
+        })});
       });
     }
+
+    return () => {
+      webSocketRef.current?.close();
+      webSocketRef.current = null;
+      console.log("PortfolioPositions WebSocket Connection Closed");
+    };
   }, [connected]);
 
   return (

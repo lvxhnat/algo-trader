@@ -41,8 +41,9 @@ async def get_portfolio_holdings(websocket: WebSocket):
                 portfolio_items[contract_id]["unrealised_pnl"] = pnl.unrealizedPnL
             if not math.isnan(pnl.value):
                 portfolio_items[contract_id]["market_value"] = pnl.value
+                portfolio_items[contract_id]["market_price"] = float(pnl.value) / float(pnl.position)
             await websocket.send_json({"data": portfolio_items[contract_id]})
-
+    
     # Subscribe to PnL for each portfolio item and send initial positions
     for contract_id, portfolio_item in portfolio_items.items():
         # Subscribe to P&L updates (modify according to how you want to handle subscriptions to avoid errors)
