@@ -1,9 +1,5 @@
 import PortfolioPositions from "./PortfolioPositionsTable";
 
-export interface PositionTableData {
-  [symbol: string]: PortfolioPositions;
-}
-
 export interface PortfolioWebsocketData {
   data: PortfolioPositions;
 }

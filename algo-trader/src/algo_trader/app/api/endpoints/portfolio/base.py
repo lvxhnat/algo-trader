@@ -73,18 +73,4 @@ async def get_portfolio_holdings(websocket: WebSocket):
         ibkr_client.updatePortfolioEvent -= send_portfolio_event
 
 if __name__ == '__main__':
-    ibkr_client.disconnect()
     ibkr_client.sync_connect()
-    portfolio_items: List[PortfolioItem] = ibkr_client.portfolio()
-    pnl_subscriptions = []
-
-    accounts = ibkr_client.managedAccounts()
-    account = accounts[0]
-
-    for portfolio_item in portfolio_items:
-        # Subscribe to P&L updates (modify according to how you want to handle subscriptions to avoid errors)
-        pnl_sub = ibkr_client.reqPnLSingle(account, '', portfolio_item.contract.conId)
-        ibkr_client.sleep(2)
-        print(pnl_sub, portfolio_item.contract.conId)
-
-        

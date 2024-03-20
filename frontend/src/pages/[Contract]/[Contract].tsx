@@ -2,14 +2,9 @@ import * as React from "react";
 import moment from "moment";
 import { ContainerWrapper } from "components/Wrappers/ContainerWrapper";
 import { useParams } from "react-router-dom";
-import {
-  ContractInfo,
-  getContractInfo,
-  getHistoricalData,
-  getHistoricalNews,
-} from "./requests";
+import { ContractInfo, getContractInfo, getHistoricalData } from "./requests";
 import OHLCChart, { OHLCData } from "components/Chart/OHLCChart/OHLCChart";
-import { Chip, Grid, Skeleton, Typography } from "@mui/material";
+import { Grid, Skeleton, Typography } from "@mui/material";
 import { capitalizeString } from "common/helper/general";
 import { currencyToEmoji } from "common/helper/countries";
 import NewsTable from "./NewsTable";
@@ -36,7 +31,7 @@ function connectPriceSocket(
   );
 
   ws.onmessage = function (event) {
-    console.log(event.data)
+    console.log(event.data);
     setPriceInfo(JSON.parse(event.data));
   };
 
@@ -114,8 +109,10 @@ export default function Contract() {
 
   React.useEffect(() => {
     getContractInfo(params.conId!).then((res) => setContractData(res.data));
-    console.log(contractData)
-    getHistoricalData(params.conId!).then((res) => setHistoricalData(res.data));
+    console.log(contractData);
+    getHistoricalData(params.conId!, {}).then((res) =>
+      setHistoricalData(res.data)
+    );
   }, []);
 
   return (
@@ -159,7 +156,13 @@ export default function Contract() {
         >
           {" "}
           {contractData
-            ? [contractData.industry, contractData.category, contractData.sub_category].filter(item => item).join(" | ")
+            ? [
+                contractData.industry,
+                contractData.category,
+                contractData.sub_category,
+              ]
+                .filter((item) => item)
+                .join(" | ")
             : null}{" "}
         </Typography>
       </div>

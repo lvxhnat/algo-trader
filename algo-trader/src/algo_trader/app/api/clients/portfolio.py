@@ -50,6 +50,4 @@ def account_rundowns():
 
 if __name__ == '__main__':
     ibkr_client.sync_connect()
-    ibkr_client.reqNewsBulletins(allMessages=True)
-    ibkr_client.sleep(5)
-    print(ibkr_client.newsBulletins())
+    print(account_rundowns())
