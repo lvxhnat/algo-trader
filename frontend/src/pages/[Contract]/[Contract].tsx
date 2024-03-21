@@ -3,13 +3,14 @@ import moment from "moment";
 import { ContainerWrapper } from "components/Wrappers/ContainerWrapper";
 import { useParams } from "react-router-dom";
 import { ContractInfo, getContractInfo, getHistoricalData } from "./requests";
-import OHLCChart, { OHLCData } from "components/Chart/OHLCChart/OHLCChart";
 import { Grid, Skeleton, Typography } from "@mui/material";
 import { capitalizeString } from "common/helper/general";
 import { currencyToEmoji } from "common/helper/countries";
 import NewsTable from "./NewsTable";
 import { ColorsEnum } from "common/theme";
 import { useThemeStore } from "store/theme";
+import { OHLCVData } from "components/Chart/Chart/type";
+import OHLCChart from "components/Chart/OHLCChart";
 
 interface PriceInfo {
   status: "live" | "frozen" | "delayed" | "delayed frozen" | "error";
@@ -105,13 +106,12 @@ export default function Contract() {
   const params = useParams();
   const theme = useThemeStore();
   const [contractData, setContractData] = React.useState<ContractInfo>();
-  const [historicalData, setHistoricalData] = React.useState<OHLCData[]>([]);
+  const [historicalData, setHistoricalData] = React.useState<OHLCVData[]>([]);
 
   React.useEffect(() => {
     getContractInfo(params.conId!).then((res) => setContractData(res.data));
-    console.log(contractData);
     getHistoricalData(params.conId!, {}).then((res) =>
-      setHistoricalData(res.data)
+    setHistoricalData(res.data)
     );
   }, []);
 
