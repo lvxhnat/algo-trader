@@ -1,8 +1,4 @@
-import Chart from "./Chart"
-import ChartCanvas, { ChartContext } from "./ChartCanvas"
+import Chart from "./Chart";
+import ChartCanvas from "./ChartCanvas";
 
-export {
-    Chart,
-    ChartCanvas,
-    ChartContext
-}
+export { Chart, ChartCanvas };

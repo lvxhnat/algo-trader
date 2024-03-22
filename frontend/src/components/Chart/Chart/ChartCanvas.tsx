@@ -1,40 +1,41 @@
 import * as d3 from "d3";
-import * as React from 'react';
-import { OHLCVData } from "./type";
+import * as React from "react";
+import { ChartCanvasProps } from "./type";
+import { useChartStore } from "./store";
 
-export const ChartContext = React.createContext<ChartContextProps | null>(null);
-
-interface ChartCanvasProps {
-  children: React.ReactNode;
-  width: number,
-  height: number,
-  margin: { left: number, right: number, top: number, bottom: number },
-  data: OHLCVData[],
-  xExtent: string[],
-  yExtent: [number, number],
+interface ChartCanvasContextProps {
+  chartId: string;
 }
-
-interface ChartContextProps {
-  width: number,
-  height: number,
-  margin: { left: number, right: number, top: number, bottom: number },
-  data: OHLCVData[],
-  xScale: d3.ScaleBand<string>;
-  yScale: d3.ScaleLinear<number, number, never>;
-}
+export const ChartCanvasContext =
+  React.createContext<null | ChartCanvasContextProps>(null);
 
 const ChartCanvas: React.FC<ChartCanvasProps> = (props) => {
+  const setChartSettings = useChartStore((state) => state.setChartSettings);
+  const { children, chartId, xExtent, yExtent, ...storeValues } = props;
+  const context = { chartId: chartId };
 
-  const { children, ...contextProps } = props;
+  if (!props.yExtent || !props.xExtent) return <></>;
 
-  if (!props.yExtent || !props.xExtent) return <></>
+  const xScale = d3
+    .scaleBand()
+    .range([props.margin.left, props.width - props.margin.right])
+    .domain(xExtent)
+    .padding(1);
 
-  const xScale = d3.scaleBand().range([0, props.width]).domain(props.xExtent).padding(0.2);
-  const yScale = d3.scaleLinear().range([props.height, 0]).domain(props.yExtent)
-  return ( 
-    <ChartContext.Provider value={{...contextProps, xScale: xScale, yScale: yScale}}>
-        {children}
-    </ChartContext.Provider>
+  const yScale = d3
+    .scaleLinear()
+    .range([props.height - props.margin.bottom, props.margin.top])
+    .domain(yExtent);
+
+  setChartSettings({
+    chartId: chartId,
+    data: { ...storeValues, xScale: xScale, yScale: yScale },
+  });
+
+  return (
+    <ChartCanvasContext.Provider value={context}>
+      {children}
+    </ChartCanvasContext.Provider>
   );
 };
 

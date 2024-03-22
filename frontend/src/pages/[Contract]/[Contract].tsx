@@ -32,7 +32,6 @@ function connectPriceSocket(
   );
 
   ws.onmessage = function (event) {
-    console.log(event.data);
     setPriceInfo(JSON.parse(event.data));
   };
 
@@ -111,7 +110,7 @@ export default function Contract() {
   React.useEffect(() => {
     getContractInfo(params.conId!).then((res) => setContractData(res.data));
     getHistoricalData(params.conId!, {}).then((res) =>
-    setHistoricalData(res.data)
+      setHistoricalData(res.data)
     );
   }, []);
 
