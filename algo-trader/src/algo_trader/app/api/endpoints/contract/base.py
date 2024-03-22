@@ -1,14 +1,15 @@
 import asyncio
-from typing import List, Optional, Literal
+from typing import List
 from starlette.websockets import WebSocketState
 from ib_insync import ContractDetails, Contract
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Request
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from algo_trader.app.config.base_config import ibkr_client
 from algo_trader.app.api.clients.news import request_historical_news_headlines
 from algo_trader.app.api.clients.contracts import serialise_contractdetails, SerialisedContractDetails, serialise_tickerdata, parse_hours
 
 from algo_trader.app.api.endpoints.contract.models import TickerInfoDTO
+from algo_trader.app.api.endpoints.contract.params import HistoricalPriceType, HistoricalDurationType, HistoricalIntervalType
 
 tag = "contract"
 router = APIRouter(tags=[tag], prefix=f"/{tag}")
@@ -33,9 +34,9 @@ async def get_ticker_info(contractId: str) -> TickerInfoDTO:
 @router.get("/{contractId}/historical")
 async def get_ticker_historical(
     contractId: str,
-    duration: Optional[Literal["60 S", "30 D", "13 W", "6 M", "10 Y"]] = "30 D",
-    interval: Optional[Literal["1 secs", "5 secs", "10 secs", "15 secs", "30 secs", "1 min", "2 mins", "3 mins", "5 mins", "10 mins", "15 mins", "20 mins", "30 mins", "1 hour", "2 hours", "3 hours", "4 hours", "8 hours", "1 day", "1 week", "1 month"]] = "1 hour",
-    price_type: Optional[Literal["TRADES", "MIDPOINT", "BID", "ASK", "BID_ASK", "ADJUSTED_LAST", "HISTORICAL_VOLATILITY", "OPTION_IMPLIED_VOLATILITY", "REBATE_RATE", "FEE_RATE", "YIELD_BID", "YIELD_ASK", "YIELD_BID_ASK", "YIELD_LAST"]] = "MIDPOINT"
+    duration: HistoricalDurationType = "30 D",
+    interval: HistoricalIntervalType = "1 hour",
+    price_type: HistoricalPriceType = "MIDPOINT"
 ):
     contract = Contract(conId=contractId)
     await ibkr_client.qualifyContractsAsync(contract)
