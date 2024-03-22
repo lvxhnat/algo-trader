@@ -9,6 +9,7 @@ import PriceTooltip from "./ToolTip/PriceTooltip";
 import { LineSeries } from "./Chart/ChartTypes";
 
 interface OHLCChartProps {
+  isLine?: boolean;
   data: OHLCVData[];
 }
 
@@ -49,8 +50,7 @@ export default function OHLCChart(props: OHLCChartProps) {
       <Chart>
         <YAxis />
         <XAxis />
-        <CandleStickSeries />
-        <LineSeries />
+        {props.isLine ? <LineSeries /> : <CandleStickSeries />}
         <CrossHairCursor />
       </Chart>
     </ChartCanvas>

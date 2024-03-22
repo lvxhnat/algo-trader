@@ -2,15 +2,14 @@ import * as React from "react";
 import moment from "moment";
 import { ContainerWrapper } from "components/Wrappers/ContainerWrapper";
 import { useParams } from "react-router-dom";
-import { ContractInfo, getContractInfo, getHistoricalData } from "./requests";
+import { ContractInfo, getContractInfo } from "./requests";
 import { Grid, Skeleton, Typography } from "@mui/material";
 import { capitalizeString } from "common/helper/general";
 import { currencyToEmoji } from "common/helper/countries";
 import NewsTable from "./NewsTable";
 import { ColorsEnum } from "common/theme";
 import { useThemeStore } from "store/theme";
-import { OHLCVData } from "components/Chart/Chart/type";
-import OHLCChart from "components/Chart/OHLCChart";
+import Chart from "./Chart";
 
 interface PriceInfo {
   status: "live" | "frozen" | "delayed" | "delayed frozen" | "error";
@@ -62,12 +61,12 @@ function PriceInfoShower(props: { contractId: string }) {
         display: "flex",
         gap: 10,
         alignItems: "flex-end",
-        paddingTop: 10,
+        paddingTop: 5,
         paddingBottom: 5,
       }}
     >
       <Typography
-        variant="h1"
+        variant="h2"
         style={{
           color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
         }}
@@ -105,19 +104,15 @@ export default function Contract() {
   const params = useParams();
   const theme = useThemeStore();
   const [contractData, setContractData] = React.useState<ContractInfo>();
-  const [historicalData, setHistoricalData] = React.useState<OHLCVData[]>([]);
 
   React.useEffect(() => {
     getContractInfo(params.conId!).then((res) => setContractData(res.data));
-    getHistoricalData(params.conId!, {}).then((res) =>
-      setHistoricalData(res.data)
-    );
   }, []);
 
   return (
     <ContainerWrapper>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
-        <Typography variant="h2">
+        <Typography variant="h3">
           {" "}
           {contractData
             ? `${contractData.symbol} - ${capitalizeString(
@@ -167,7 +162,7 @@ export default function Contract() {
       </div>
       <Grid container>
         <Grid item xs={9}>
-          <OHLCChart data={historicalData} />
+          <Chart conId={params.conId!}/>
         </Grid>
         <Grid item xs={3}>
           <NewsTable conId={params.conId!} />

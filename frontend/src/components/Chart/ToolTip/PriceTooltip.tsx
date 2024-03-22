@@ -27,7 +27,7 @@ const PriceTooltip = () => {
   }, [mousePosition])
 
   return (
-    <div style={{ gap: 10, fontSize: 10, paddingTop: 15, paddingLeft: margin.left, height: 10 }}>
+    <div style={{ gap: 10, fontSize: 10, paddingBottom: 15, paddingLeft: margin.left, height: 10 }}>
         {
           values ? 
             <React.Fragment>

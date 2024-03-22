@@ -10,6 +10,11 @@ from algo_trader.app.api.clients.portfolio import serialise_portfolioitem, Seria
 tag = "portfolio"
 router = APIRouter(tags=[tag], prefix=f"/{tag}")
 
+@router.websocket("/accountValues")
+async def get_portfolio_values(websocket: WebSocket):
+    await websocket.accept()
+    pass
+
 @router.websocket("/holdings")
 async def get_portfolio_holdings(websocket: WebSocket):
     """ Use both .portfolio() with .reqPnLSingle() methods to update our events
