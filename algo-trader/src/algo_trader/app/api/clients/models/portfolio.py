@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class CurrencyTypes:
+class CurrencyTypes(BaseModel):
     BASE: str
     SGD: str
     USD: str

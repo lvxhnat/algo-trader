@@ -132,10 +132,10 @@ export default function Contract() {
               }${contractData.currency} 
             | Liquid Hours: ${
               contractData.liquid_hours[moment(new Date()).format("YYYYMMDD")]
-                .start
+                .start ?? "NA"
             } - ${
                 contractData.liquid_hours[moment(new Date()).format("YYYYMMDD")]
-                  .end
+                  .end ?? "NA"
               } (${contractData.time_zone})`
             : null}{" "}
         </Typography>
@@ -162,7 +162,7 @@ export default function Contract() {
       </div>
       <Grid container>
         <Grid item xs={9}>
-          <Chart conId={params.conId!}/>
+          <Chart conId={params.conId!} />
         </Grid>
         <Grid item xs={3}>
           <NewsTable conId={params.conId!} />

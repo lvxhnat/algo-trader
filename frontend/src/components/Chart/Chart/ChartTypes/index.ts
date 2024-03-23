@@ -1,7 +1,4 @@
-import CandleStickSeries from "./CandleStickSeries"
-import LineSeries from "./LineSeries"
+import CandleStickSeries from "./CandleStickSeries";
+import LineSeries from "./LineSeries";
 
-export {
-    LineSeries,
-    CandleStickSeries
-}
+export { LineSeries, CandleStickSeries };

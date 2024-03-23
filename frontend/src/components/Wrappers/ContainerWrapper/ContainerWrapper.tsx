@@ -3,7 +3,6 @@ import * as React from "react";
 import { Alert, CssBaseline, Divider, Snackbar, Stack } from "@mui/material";
 import Navigation from "components/Navigation";
 import { ALERTS } from "common/constant/literals";
-import { getConnectionHealth } from "./request";
 import { useConnectedStore } from "store/general/general";
 
 export interface ContainerWrapperProps {
@@ -11,42 +10,8 @@ export interface ContainerWrapperProps {
   hideNavigate?: boolean;
 }
 
-function connectWebsocket(setConnect: (type: boolean) => void) {
-  let ws = new WebSocket(`${process.env.REACT_APP_WEBSOCKET_URL!}/health`);
-
-  ws.onmessage = function (event) {
-    setConnect(JSON.parse(event.data).connected_status);
-  };
-
-  ws.onerror = function (err: any) {
-    setConnect(false);
-    ws.close();
-    setTimeout(function () {
-      connectWebsocket(setConnect);
-    }, 2000);
-  };
-  return ws;
-}
-
 function DisconnectAlert() {
-  const [connected, setConnected] = useConnectedStore((state) => [
-    state.connected,
-    state.setConnected,
-  ]);
-
-  React.useEffect(() => {
-    let socket: WebSocket;
-
-    socket = connectWebsocket(setConnected);
-    if (!socket.readyState) {
-      setConnected(false);
-    }
-
-    return () => {
-      if (socket) socket.close();
-      console.log("PortfolioPositions WebSocket Connection Closed");
-    };
-  }, []);
+  const connected = useConnectedStore((state) => state.connected);
 
   return !connected ? (
     <Snackbar open={true}>

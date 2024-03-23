@@ -10,7 +10,6 @@ interface ChartProps {
 
 const Chart: React.FC<ChartProps> = (props) => {
   const svgRef = React.useRef<SVGSVGElement>(null);
-  const rectRef = React.useRef<SVGSVGElement>(null);
   const { chartId } = React.useContext(ChartCanvasContext)!;
   const { width, height, margin } = useChartStore(
     (state) =>

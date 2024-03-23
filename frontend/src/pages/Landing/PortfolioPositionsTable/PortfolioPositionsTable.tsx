@@ -132,7 +132,12 @@ export default function PortfolioPositionsTable() {
     <Table
       stickyHeader
       size="small"
-      sx={{ tableLayout: "fixed", width: "100%", height: "100%" }}
+      sx={{
+        tableLayout: "fixed",
+        width: "100%",
+        height: "100%",
+        maxHeight: 300,
+      }}
     >
       <TableHead>
         <TableRow>

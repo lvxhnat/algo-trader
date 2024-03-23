@@ -33,7 +33,7 @@ const ProfileButton: React.FC = () => {
       >
         <MenuItem>
           <S.ToggleThemeWrapper>
-            <Typography variant="h3"> Light Theme </Typography>
+            <Typography variant="h4"> Light Theme </Typography>
             <div style={{ justifyContent: "flex-end" }}>
               <ToggleThemeMode />
             </div>
