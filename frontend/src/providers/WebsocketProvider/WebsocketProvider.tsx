@@ -26,11 +26,9 @@ function connectWebsocket(setConnect: (type: boolean) => void) {
 const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
   const setConnected = useConnectedStore((state) => state.setConnected);
   useEffect(() => {
-    let healthSocket: WebSocket;
-    healthSocket = connectWebsocket(setConnected);
-    if (!healthSocket.readyState) {
-      setConnected(false);
-    }
+    const healthSocket: WebSocket = connectWebsocket(setConnected);
+    if (!healthSocket.readyState) setConnected(false);
+    
 
     return () => {
       if (healthSocket) healthSocket.close();

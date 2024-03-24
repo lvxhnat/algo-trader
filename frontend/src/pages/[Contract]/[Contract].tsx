@@ -106,7 +106,7 @@ export default function Contract() {
   const [contractData, setContractData] = React.useState<ContractInfo>();
 
   React.useEffect(() => {
-    getContractInfo(params.conId!).then((res) => setContractData(res.data));
+    getContractInfo(params.conId!).then((res) => setContractData(res.data)).catch(() => null);
   }, []);
 
   return (
