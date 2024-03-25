@@ -1,15 +1,17 @@
 import * as React from "react";
 import moment from "moment";
-import { ContainerWrapper } from "components/Wrappers/ContainerWrapper";
-import { useParams } from "react-router-dom";
+import Chart from "./Chart";
+import NewsTable from "./NewsTable";
 import { ContractInfo, getContractInfo } from "./requests";
+import { useParams } from "react-router-dom";
 import { Grid, Skeleton, Typography } from "@mui/material";
+
+import { ContainerWrapper } from "components/Wrappers/ContainerWrapper";
 import { capitalizeString } from "common/helper/general";
 import { currencyToEmoji } from "common/helper/countries";
-import NewsTable from "./NewsTable";
 import { ColorsEnum } from "common/theme";
 import { useThemeStore } from "store/theme";
-import Chart from "./Chart";
+import BuySellClose from "./BuySellClose/BuySellClose";
 
 interface PriceInfo {
   status: "live" | "frozen" | "delayed" | "delayed frozen" | "error";
@@ -106,65 +108,76 @@ export default function Contract() {
   const [contractData, setContractData] = React.useState<ContractInfo>();
 
   React.useEffect(() => {
-    getContractInfo(params.conId!).then((res) => setContractData(res.data)).catch(() => null);
+    getContractInfo(params.conId!)
+      .then((res) => {
+        console.log(res.data);
+        setContractData(res.data);
+      })
+      .catch(() => null);
   }, []);
+
+  const formatDate = (dateItem: any) =>
+    dateItem[moment(new Date()).format("YYYYMMDD")];
 
   return (
     <ContainerWrapper>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
-        <Typography variant="h3">
-          {" "}
-          {contractData
-            ? `${contractData.symbol} - ${capitalizeString(
-                contractData.long_name
-              )}`
-            : null}{" "}
-        </Typography>
-      </div>
-      <PriceInfoShower contractId={params.conId!} />
-      <div>
-        <Typography variant="subtitle2">
-          {contractData
-            ? `${contractData.exchange} | ${
-                currencyToEmoji[
-                  contractData.currency as keyof typeof currencyToEmoji
-                ]
-              }${contractData.currency} 
-            | Liquid Hours: ${
-              contractData.liquid_hours[moment(new Date()).format("YYYYMMDD")]
-                .start ?? "NA"
-            } - ${
-                contractData.liquid_hours[moment(new Date()).format("YYYYMMDD")]
-                  .end ?? "NA"
-              } (${contractData.time_zone})`
-            : null}{" "}
-        </Typography>
-        <Typography
-          variant="subtitle2"
-          style={{
-            color:
-              theme.mode === "dark"
-                ? ColorsEnum.warmgray5
-                : ColorsEnum.coolgray2,
-          }}
-        >
-          {" "}
-          {contractData
-            ? [
-                contractData.industry,
-                contractData.category,
-                contractData.sub_category,
-              ]
-                .filter((item) => item)
-                .join(" | ")
-            : null}{" "}
-        </Typography>
-      </div>
       <Grid container>
         <Grid item xs={9}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+            <Typography variant="h3">
+              {" "}
+              {contractData
+                ? `${contractData.symbol} - ${capitalizeString(
+                    contractData.long_name
+                  )}`
+                : null}{" "}
+            </Typography>
+          </div>
+          <PriceInfoShower contractId={params.conId!} />
+          <div>
+            <Typography variant="subtitle2">
+              {contractData
+                ? `${contractData.exchange} | ${
+                    currencyToEmoji[
+                      contractData.currency as keyof typeof currencyToEmoji
+                    ]
+                  }${contractData.currency} 
+            | Liquid Hours: ${
+              formatDate(contractData.liquid_hours) == "Closed"
+                ? "Closed"
+                : formatDate(contractData.liquid_hours).start
+                ? `${formatDate(contractData.liquid_hours).start} - ${
+                    formatDate(contractData.liquid_hours).end
+                  } (${contractData.time_zone})`
+                : "NA"
+            }`
+                : null}
+            </Typography>
+            <Typography
+              variant="subtitle2"
+              style={{
+                color:
+                  theme.mode === "dark"
+                    ? ColorsEnum.warmgray5
+                    : ColorsEnum.coolgray2,
+              }}
+            >
+              {" "}
+              {contractData
+                ? [
+                    contractData.industry,
+                    contractData.category,
+                    contractData.sub_category,
+                  ]
+                    .filter((item) => item)
+                    .join(" | ")
+                : null}{" "}
+            </Typography>
+          </div>
           <Chart conId={params.conId!} />
         </Grid>
         <Grid item xs={3}>
+          <BuySellClose />
           <NewsTable conId={params.conId!} />
         </Grid>
       </Grid>

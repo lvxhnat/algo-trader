@@ -1,0 +1,8 @@
+# Jupyter Notebooks 
+ipynb_checkpoints/
+*.ipynb 
+*Untitled.ipynb
+
+# Data Folders
+scraped-data/
+.env

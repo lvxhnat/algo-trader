@@ -1,22 +1,22 @@
 import React, { useEffect } from "react";
-import { useConnectedStore } from "store/general/general";
+import { useConnectedStore, useOrdersStore } from "store/general/general";
 
 interface WebSocketProviderProps {
   children?: React.ReactNode;
 }
 
-function connectWebsocket(setConnect: (type: boolean) => void) {
-  let ws = new WebSocket(`${process.env.REACT_APP_WEBSOCKET_URL!}/health`);
+function connectWebsocket(url: string, setValue: (val: any) => void) {
+  let ws = new WebSocket(url);
 
   ws.onmessage = function (event) {
-    setConnect(JSON.parse(event.data).connected_status);
+    setValue(JSON.parse(event.data));
   };
 
   ws.onerror = function (err: any) {
-    setConnect(false);
+    setValue(false);
     ws.close();
     setTimeout(function () {
-      connectWebsocket(setConnect);
+      connectWebsocket(url, setValue);
     }, 2000);
   };
 
@@ -25,13 +25,24 @@ function connectWebsocket(setConnect: (type: boolean) => void) {
 
 const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
   const setConnected = useConnectedStore((state) => state.setConnected);
+  const [initOrders] = useOrdersStore((state) => [state.initConnected]);
+
   useEffect(() => {
-    const healthSocket: WebSocket = connectWebsocket(setConnected);
+    const healthSocket: WebSocket = connectWebsocket(
+      `${process.env.REACT_APP_WEBSOCKET_URL!}/health`,
+      (val) => setConnected(val.connected_status)
+    );
     if (!healthSocket.readyState) setConnected(false);
-    
+    const orderSocket: WebSocket = connectWebsocket(
+      `${process.env.REACT_APP_WEBSOCKET_URL!}/orders`,
+      (val) => {
+        if (val.type === "initialise") initOrders(val.data);
+      }
+    );
 
     return () => {
       if (healthSocket) healthSocket.close();
+      if (orderSocket) orderSocket.close();
       console.log("Health WebSocket Connection Closed");
     };
   }, []);

@@ -5,8 +5,7 @@ import { Button, Skeleton } from "@mui/material";
 import { OHLCVData } from "components/Chart/Chart/type";
 import { getHistoricalData } from "./requests";
 import OHLCChart from "components/Chart/OHLCChart";
-import { error } from "console";
-import { useConnectedStore } from "store/general/general";
+import { useConnectedStore, useOrdersStore } from "store/general/general";
 
 interface ChartProps {
   conId: string;
@@ -16,6 +15,7 @@ export default function Chart(props: ChartProps) {
   const [isLine, setIsLine] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [historicalData, setHistoricalData] = React.useState<OHLCVData[]>([]);
+  const orders = useOrdersStore((state) => state.orders);
   const setConnected = useConnectedStore((state) => state.setConnected);
 
   React.useEffect(() => {

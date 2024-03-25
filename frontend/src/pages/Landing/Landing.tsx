@@ -17,10 +17,10 @@ export default function Landing() {
         </Grid>
         <Grid item xs={5}>
           <LivePlayer />
-          <PortfolioPieChart
+          {/* <PortfolioPieChart
             size={300}
             margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
-          />
+          /> */}
         </Grid>
       </Grid>
     </ContainerWrapper>

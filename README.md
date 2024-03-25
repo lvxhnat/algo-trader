@@ -16,3 +16,13 @@ yarn run
 pip install -e .
 uvicorn algo_trader.app.main:app --reload --port 1237
 ```
+
+## Contributing
+
+All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
+
+If you are simply looking to start working with the codebase, navigate to the GitHub "issues" tab and start looking through interesting issues. You can also triage issues which may include reproducing bug reports, or asking for vital information such as version numbers or reproduction instructions. To read more about contributing, you can refer to [CONTRIBUTING](./docs/CONTRIBUTING.md)
+
+## License
+
+GPLv3

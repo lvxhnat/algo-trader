@@ -1,8 +1,5 @@
 import { create } from "zustand";
 
-/**
- * Stores the ticker data that is shown on the grid (i.e. The ticker time series)
- */
 export interface ConnectedStoreTypes {
   connected: boolean;
   setConnected: (connected: boolean) => void;
@@ -13,4 +10,33 @@ export const useConnectedStore = create<ConnectedStoreTypes>((set) => ({
   setConnected: (connected: boolean) => {
     set({ connected: connected });
   },
+}));
+
+interface Orders {
+  contract_id: number;
+  symbol: string;
+  exchange: string;
+  currency: string;
+  orders_id: number;
+  action: string;
+  total_quantity: number;
+  filled_quantity: number;
+  orders_type: string;
+  time_in_force: string;
+  limit_price: number;
+  trailstop_price: number;
+}
+
+interface OrdersStore {
+  [symbol: string]: Orders[];
+}
+
+export interface OrdersStoreTypes {
+  orders: OrdersStore;
+  initConnected: (orders: OrdersStore) => void;
+}
+
+export const useOrdersStore = create<OrdersStoreTypes>((set) => ({
+  orders: {},
+  initConnected: (orders: OrdersStore) => set({ orders: orders }),
 }));

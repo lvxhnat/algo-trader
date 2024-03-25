@@ -1,7 +1,7 @@
 from ib_insync import Trade
 
 
-def serialise_trade(trade: Trade):
+async def serialise_order(trade: Trade):
     return {
         "contract_id": trade.contract.conId,
         "symbol": trade.contract.symbol,
