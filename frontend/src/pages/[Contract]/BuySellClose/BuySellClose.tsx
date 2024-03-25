@@ -20,7 +20,7 @@ const StyledButton = (props: {
     <Button
       disabled={props.disabled}
       style={{ color: color, borderColor: color }}
-      sx={{ '&:hover': { backgroundColor: ColorsEnum.beer18, opacity: '80%' } }}
+      sx={{ "&:hover": { backgroundColor: ColorsEnum.beer18, opacity: "80%" } }}
     >
       <Typography variant="subtitle1">{props.children}</Typography>{" "}
     </Button>
@@ -30,22 +30,22 @@ const StyledButton = (props: {
 export default function BuySellClose() {
   return (
     <div>
-        <Box
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                "& > *": {
-                m: 1,
-                },
-            }}
-            >
-      <ButtonGroup size="small" aria-label="Small button group">
-        <StyledButton> Buy </StyledButton>
-        <StyledButton> Sell </StyledButton>
-        <StyledButton disabled> Close </StyledButton>
-      </ButtonGroup>
-    </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          "& > *": {
+            m: 1,
+          },
+        }}
+      >
+        <ButtonGroup size="small" aria-label="Small button group">
+          <StyledButton> Buy </StyledButton>
+          <StyledButton> Sell </StyledButton>
+          <StyledButton disabled> Close </StyledButton>
+        </ButtonGroup>
+      </Box>
     </div>
   );
 }

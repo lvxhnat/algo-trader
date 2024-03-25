@@ -101,7 +101,7 @@ if __name__ == "__main__":
     from ib_insync import Stock
 
     ibkr_client.sync_connect()
-    contract = Stock("IBM", "SMART", "USD")
-    ticker = ibkr_client.reqMktData(contract, "258")
-    ibkr_client.sleep(2)
-    print(ticker.fundamentalRatios)
+    contract = Contract(conId=638174953)
+    ibkr_client.qualifyContracts(contract)
+    contract_details = ibkr_client.reqContractDetails(contract)
+    print(contract_details)

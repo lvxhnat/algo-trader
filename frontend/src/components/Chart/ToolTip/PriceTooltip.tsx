@@ -32,7 +32,6 @@ const PriceTooltip = () => {
         gap: 10,
         fontSize: 10,
         paddingBottom: 15,
-        paddingLeft: margin.left,
         height: 10,
       }}
     >
