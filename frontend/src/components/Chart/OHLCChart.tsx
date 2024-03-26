@@ -57,23 +57,18 @@ export default function OHLCChart(props: OHLCChartProps) {
         <XAxis />
         {props.isOHLC ? <CandleStickSeries /> : <LineSeries />}
         {orders
-          ? orders.map((d) => {
-              console.log(d);
-              return (
-                <HorizontalLineSeries
-                  key={d.order_type}
-                  color={
-                    d.action === "SELL" ? ColorsEnum.red : ColorsEnum.green
-                  }
-                  text={`🔔 ${d.action} ${d.order_type} ${d.time_in_force} $${d.trailstop_price}/${d.total_quantity}`}
-                  d1={{ date: props.data[0].date, value: d.trailstop_price }}
-                  d2={{
-                    date: props.data[props.data.length - 1].date,
-                    value: d.trailstop_price,
-                  }}
-                />
-              );
-            })
+          ? orders.map((d) => (
+              <HorizontalLineSeries
+                key={d.order_type}
+                color={d.action === "SELL" ? ColorsEnum.red : ColorsEnum.green}
+                text={`🔔 ${d.action} ${d.order_type} ${d.time_in_force} $${d.trailstop_price}/${d.total_quantity}`}
+                d1={{ date: props.data[0].date, value: d.trailstop_price }}
+                d2={{
+                  date: props.data[props.data.length - 1].date,
+                  value: d.trailstop_price,
+                }}
+              />
+            ))
           : null}
         <CrossHairCursor />
       </Chart>

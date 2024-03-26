@@ -160,7 +160,7 @@ const MarketStatusPill = (props: MarketStatusPillProps) => {
       setMarketStatus(
         getMarketStatus(props.tradingHours, props.liquidHours, props.timeZone)
       );
-    }, 1000);
+    }, 5000);
     return () => clearInterval(intervalId);
   }, []);
 
