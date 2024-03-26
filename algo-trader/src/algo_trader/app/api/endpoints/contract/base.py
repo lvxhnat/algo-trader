@@ -82,9 +82,7 @@ async def get_price_stream(
 
     async def send_data(ticker):
         if websocket.application_state == WebSocketState.CONNECTED:
-            data = await serialise_tickerdata(
-                ticker, status="delayed"
-            )  # Ensure this function is async or adjust accordingly
+            data = await serialise_tickerdata(ticker, status="delayed")
             await websocket.send_json(data)
 
     contract = Contract(conId=contractId)
@@ -95,7 +93,10 @@ async def get_price_stream(
     ticker = ibkr_client.reqMktData(contract, request_types)
     await asyncio.sleep(2)
     ibkr_client.pendingTickersEvent += on_tick_update
-    await send_data(ticker)
+    try:
+        await send_data(ticker)
+    except:
+        pass
 
     try:
         while True:

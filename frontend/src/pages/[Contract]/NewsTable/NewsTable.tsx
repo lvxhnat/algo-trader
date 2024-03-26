@@ -66,7 +66,7 @@ function NewsRow(props: NewsRowProps) {
 React.memo(NewsRow);
 
 interface NewsTableProps {
-  conId: string;
+  conId: number;
 }
 
 export default function NewsTable(props: NewsTableProps) {

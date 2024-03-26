@@ -1,10 +1,10 @@
 import * as React from "react";
-import moment from "moment";
+import moment from "moment-timezone";
 import Chart from "./Chart";
 import NewsTable from "./NewsTable";
-import { ContractInfo, getContractInfo } from "./requests";
+import { ContractInfo, getContractInfo, getHistoricalData } from "./requests";
 import { useParams } from "react-router-dom";
-import { Grid, Skeleton, Typography } from "@mui/material";
+import { Chip, Grid, Skeleton, Typography } from "@mui/material";
 
 import { ContainerWrapper } from "components/Wrappers/ContainerWrapper";
 import { capitalizeString } from "common/helper/general";
@@ -26,10 +26,10 @@ interface PriceInfo {
 
 function connectPriceSocket(
   setPriceInfo: (value: PriceInfo) => void,
-  contractId: string
+  conId: number
 ) {
   let ws = new WebSocket(
-    `${process.env.REACT_APP_WEBSOCKET_URL!}/contract/${contractId}/price`
+    `${process.env.REACT_APP_WEBSOCKET_URL!}/contract/${conId}/price`
   );
 
   ws.onmessage = function (event) {
@@ -39,18 +39,27 @@ function connectPriceSocket(
   ws.onerror = function (err: any) {
     ws.close();
     setTimeout(function () {
-      connectPriceSocket(setPriceInfo, contractId);
+      connectPriceSocket(setPriceInfo, conId);
     }, 2000);
   };
   return ws;
 }
 
-function PriceInfoShower(props: { contractId: string }) {
+function PriceInfoShower(props: { conId: number }) {
   const theme = useThemeStore();
+  const defaultColor =
+    theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey;
+  const [openPrice, setOpenPrice] = React.useState<number>();
   const [priceInfo, setPriceInfo] = React.useState<PriceInfo>({} as PriceInfo);
 
   React.useEffect(() => {
-    const socket = connectPriceSocket(setPriceInfo, props.contractId);
+    const socket = connectPriceSocket(setPriceInfo, props.conId);
+    getHistoricalData(props.conId, {
+      duration: "5 D",
+      interval: "1 day",
+    }).then((res) => {
+      setOpenPrice(res.data[res.data.length - 2].close);
+    });
     return () => {
       socket.close();
       console.log("PriceInfoShower WebSocket Connection Closed");
@@ -70,15 +79,32 @@ function PriceInfoShower(props: { contractId: string }) {
       <Typography
         variant="h2"
         style={{
-          color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
+          color: defaultColor,
         }}
       >
         ${priceInfo.last ? priceInfo.last.toFixed(2) : "-"}
       </Typography>
       <Typography
+        variant="h3"
+        style={{
+          color: openPrice
+            ? openPrice < priceInfo.last
+              ? ColorsEnum.green
+              : ColorsEnum.red
+            : defaultColor,
+        }}
+      >
+        {priceInfo.last && openPrice
+          ? `${(priceInfo.last - openPrice).toFixed(2)} (${(
+              (100 * (priceInfo.last - openPrice)) /
+              priceInfo.last
+            ).toFixed(2)}%)`
+          : null}
+      </Typography>
+      <Typography
         variant="subtitle1"
         style={{
-          color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
+          color: defaultColor,
         }}
       >
         Last Bid: ${priceInfo.last_bid ? priceInfo.last_bid.toFixed(2) : "-"}
@@ -86,7 +112,7 @@ function PriceInfoShower(props: { contractId: string }) {
       <Typography
         variant="subtitle1"
         style={{
-          color: theme.mode === "dark" ? ColorsEnum.grey : ColorsEnum.darkGrey,
+          color: defaultColor,
         }}
       >
         Last Ask: ${priceInfo.last_ask ? priceInfo.last_ask.toFixed(2) : "-"}
@@ -102,17 +128,74 @@ function PriceInfoShower(props: { contractId: string }) {
   );
 }
 
+const getMarketStatus = (
+  tradingHours: any,
+  liquidHours: any,
+  timeZone: string
+) => {
+  const dateToday = moment(new Date()).format("YYYYMMDD");
+  const trading = tradingHours[dateToday];
+  const liquid = liquidHours[dateToday];
+
+  if (liquid == "Hours") return "Market Closed";
+
+  const localTime = moment.tz(moment(), timeZone).format("HHmm");
+  if (localTime > trading.end || localTime < trading.start)
+    return "Market Closed";
+  if (localTime > liquid.start && localTime < liquid.end) return "Market Open";
+  if (localTime > trading.start) return "Pre-Market";
+  if (localTime < trading.end) return "Post-Market";
+};
+
+interface MarketStatusPillProps {
+  tradingHours: any;
+  liquidHours: any;
+  timeZone: any;
+}
+
+const MarketStatusPill = (props: MarketStatusPillProps) => {
+  const [marketStatus, setMarketStatus] = React.useState<string>();
+  React.useEffect(() => {
+    const intervalId = setInterval(() => {
+      setMarketStatus(
+        getMarketStatus(props.tradingHours, props.liquidHours, props.timeZone)
+      );
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return (
+    <Chip
+      label={marketStatus}
+      size="small"
+      style={{
+        backgroundColor:
+          marketStatus === "Market Closed"
+            ? ColorsEnum.red
+            : marketStatus === " Market Open"
+            ? ColorsEnum.green
+            : ColorsEnum.oldschoolOrange,
+        fontSize: `calc(0.25rem + 0.3vw)`,
+        height: 15,
+        color: ColorsEnum.white,
+      }}
+      sx={{
+        "& .MuiChip-label": {
+          paddingTop: 0, // Adjust label padding as needed
+          paddingBottom: 0, // Adjust label padding as needed
+        },
+      }}
+    />
+  );
+};
+
 export default function Contract() {
   const params = useParams();
   const theme = useThemeStore();
   const [contractData, setContractData] = React.useState<ContractInfo>();
-
   React.useEffect(() => {
     getContractInfo(params.conId!)
-      .then((res) => {
-        console.log(res.data);
-        setContractData(res.data);
-      })
+      .then((res) => setContractData(res.data))
       .catch(() => null);
   }, []);
 
@@ -132,8 +215,15 @@ export default function Contract() {
                   )}`
                 : null}{" "}
             </Typography>
+            {contractData ? (
+              <MarketStatusPill
+                timeZone={contractData.time_zone}
+                tradingHours={contractData.trading_hours}
+                liquidHours={contractData.liquid_hours}
+              />
+            ) : null}
           </div>
-          <PriceInfoShower contractId={params.conId!} />
+          <PriceInfoShower conId={Number(params.conId)} />
           <div>
             <Typography variant="subtitle2">
               {contractData
@@ -174,11 +264,11 @@ export default function Contract() {
                 : null}{" "}
             </Typography>
           </div>
-          <Chart conId={params.conId!} />
+          <Chart conId={Number(params.conId)} />
         </Grid>
         <Grid item xs={3}>
           <BuySellClose />
-          <NewsTable conId={params.conId!} />
+          <NewsTable conId={Number(params.conId)} />
         </Grid>
       </Grid>
     </ContainerWrapper>

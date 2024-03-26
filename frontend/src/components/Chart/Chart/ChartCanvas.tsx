@@ -4,7 +4,7 @@ import { ChartCanvasProps } from "./type";
 import { useChartStore } from "./store";
 
 interface ChartCanvasContextProps {
-  chartId: string;
+  chartId: number;
 }
 export const ChartCanvasContext =
   React.createContext<null | ChartCanvasContextProps>(null);

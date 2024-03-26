@@ -22,8 +22,8 @@ const XAxis: React.FC = () => {
       .tickFormat((value) => moment(new Date(value)).format("DD MMM YY"))
       .tickValues(
         xScale.domain().filter(function (d, i) {
-          if (i === 0 || i === data.length - 1) return true;
-          else return !(i % 20);
+          const jumps = Math.round(data.length / 10);
+          return !(i % jumps);
         })
       );
     d3.select(ref.current)

@@ -1,7 +1,7 @@
 export interface CurrencyType {
   BASE: number;
-  USD: number;
-  SGD: number;
+  USD?: number;
+  SGD?: number;
 }
 
 export interface PortfolioValuesDTO {

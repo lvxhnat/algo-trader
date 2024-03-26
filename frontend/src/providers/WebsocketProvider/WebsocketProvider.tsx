@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { useConnectedStore, useOrdersStore } from "store/general/general";
+import {
+  Orders,
+  OrdersStore,
+  useConnectedStore,
+  useOrdersStore,
+} from "store/general/general";
 
 interface WebSocketProviderProps {
   children?: React.ReactNode;
@@ -36,7 +41,12 @@ const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
     const orderSocket: WebSocket = connectWebsocket(
       `${process.env.REACT_APP_WEBSOCKET_URL!}/orders`,
       (val) => {
-        if (val.type === "initialise") initOrders(val.data);
+        const d: OrdersStore = {};
+        val.data.map((dict: Orders) => {
+          d[dict.contract_id] = [];
+          d[dict.contract_id].push(dict);
+        });
+        if (val.type === "initialise") initOrders(d);
       }
     );
 

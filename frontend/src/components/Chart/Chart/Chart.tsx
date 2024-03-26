@@ -32,7 +32,7 @@ const Chart: React.FC<ChartProps> = (props) => {
 
   return (
     <svg
-      id={chartId}
+      id={String(chartId)}
       ref={svgRef}
       width="100%" // Make SVG responsive by setting width to 100%
       height="100%" // Make SVG responsive by setting height to 100%

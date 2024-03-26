@@ -6,15 +6,20 @@ import XAxis from "./Axis/XAxis";
 import CandleStickSeries from "./Chart/ChartTypes/CandleStickSeries";
 import CrossHairCursor from "./Mouse/CrossHair";
 import PriceTooltip from "./ToolTip/PriceTooltip";
-import { LineSeries } from "./Chart/ChartTypes";
+import { HorizontalLineSeries, LineSeries } from "./Chart/ChartTypes";
+import { useOrdersStore } from "store/general/general";
+import { ColorsEnum } from "common/theme";
 
 interface OHLCChartProps {
-  isLine?: boolean;
+  chartId: number; // conId
   data: OHLCVData[];
+  isOHLC?: boolean;
 }
 
 export default function OHLCChart(props: OHLCChartProps) {
-  const data = props.data.slice(props.data.length - 200, props.data.length);
+  const data = props.data;
+  const orders = useOrdersStore((state) => state.orders[props.chartId]);
+  console.log(orders);
   const getExtentY = (arr: OHLCVData[]): [number, number] | undefined => {
     if (arr.length === 0) return undefined;
 
@@ -38,7 +43,7 @@ export default function OHLCChart(props: OHLCChartProps) {
 
   return (
     <ChartCanvas
-      chartId="1"
+      chartId={props.chartId}
       width={1200}
       height={500}
       margin={{ top: 5, right: 20, bottom: 30, left: 40 }}
@@ -50,7 +55,26 @@ export default function OHLCChart(props: OHLCChartProps) {
       <Chart>
         <YAxis />
         <XAxis />
-        {props.isLine ? <LineSeries /> : <CandleStickSeries />}
+        {props.isOHLC ? <CandleStickSeries /> : <LineSeries />}
+        {orders
+          ? orders.map((d) => {
+              console.log(d);
+              return (
+                <HorizontalLineSeries
+                  key={d.order_type}
+                  color={
+                    d.action === "SELL" ? ColorsEnum.red : ColorsEnum.green
+                  }
+                  text={`🔔 ${d.action} ${d.order_type} ${d.time_in_force} $${d.trailstop_price}/${d.total_quantity}`}
+                  d1={{ date: props.data[0].date, value: d.trailstop_price }}
+                  d2={{
+                    date: props.data[props.data.length - 1].date,
+                    value: d.trailstop_price,
+                  }}
+                />
+              );
+            })
+          : null}
         <CrossHairCursor />
       </Chart>
     </ChartCanvas>

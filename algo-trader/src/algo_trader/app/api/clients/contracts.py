@@ -101,7 +101,27 @@ if __name__ == "__main__":
     from ib_insync import Stock
 
     ibkr_client.sync_connect()
-    contract = Contract(conId=638174953)
+    contract = Contract(conId=523014861)
     ibkr_client.qualifyContracts(contract)
-    contract_details = ibkr_client.reqContractDetails(contract)
+
+    allowed_intervals = {
+        "1D": "1 min",
+        "5D": "10 mins",
+        "1M": "30 mins",
+        "6M": "1 day",
+        "YTD": "1 day",
+        "1Y": "1 day",
+        "5Y": "1 day",
+        "10Y": "1 week",
+    }
+
+    contract_details = ibkr_client.reqHistoricalData(
+        contract,
+        endDateTime="",
+        durationStr="1 D",
+        barSizeSetting="1 min",
+        whatToShow="BID_ASK",
+        useRTH=True,
+    )
+
     print(contract_details)

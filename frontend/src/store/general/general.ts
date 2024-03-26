@@ -12,7 +12,7 @@ export const useConnectedStore = create<ConnectedStoreTypes>((set) => ({
   },
 }));
 
-interface Orders {
+export interface Orders {
   contract_id: number;
   symbol: string;
   exchange: string;
@@ -21,14 +21,14 @@ interface Orders {
   action: string;
   total_quantity: number;
   filled_quantity: number;
-  orders_type: string;
+  order_type: string;
   time_in_force: string;
   limit_price: number;
   trailstop_price: number;
 }
 
-interface OrdersStore {
-  [symbol: string]: Orders[];
+export interface OrdersStore {
+  [conId: number]: Orders[];
 }
 
 export interface OrdersStoreTypes {

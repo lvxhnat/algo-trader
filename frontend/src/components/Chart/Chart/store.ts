@@ -15,7 +15,7 @@ interface ChartMouseEvents {
 }
 
 interface BaseProps {
-  chartId: string;
+  chartId: number;
   data: { [chartId: string]: any };
 }
 

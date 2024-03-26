@@ -41,7 +41,8 @@ export const Intervals = [
   "1 week",
   "1 month",
 ];
-export const Durations = ["60 S", "30 D", "13 W", "6 M", "10 Y"];
+
+export const Durations = ["1 D", "5 D", "1 M", "6 M", "1 Y", "5 Y", "10 Y"];
 export type IntervalTypes =
   | "1 secs"
   | "5 secs"
@@ -64,7 +65,14 @@ export type IntervalTypes =
   | "1 day"
   | "1 week"
   | "1 month";
-export type DurationTypes = "60 S" | "30 D" | "13 W" | "6 M" | "10 Y";
+export type DurationTypes =
+  | "1 D"
+  | "5 D"
+  | "1 M"
+  | "6 M"
+  | "1 Y"
+  | "5 Y"
+  | "10 Y";
 interface TickerHistoricalParams {
   duration?: DurationTypes;
   interval?: IntervalTypes;
@@ -86,7 +94,7 @@ interface TickerHistoricalParams {
 }
 
 export const getHistoricalData = (
-  contractId: string,
+  contractId: number,
   params: TickerHistoricalParams
 ) => request().get(`${ROUTES.CONTRACT}/${contractId}/historical`, { params });
 

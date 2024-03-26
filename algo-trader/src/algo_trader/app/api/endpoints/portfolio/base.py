@@ -3,6 +3,7 @@ import asyncio
 from fastapi import APIRouter, WebSocket
 from ib_insync import PortfolioItem, PnLSingle, AccountValue
 from starlette.websockets import WebSocketState, WebSocketDisconnect
+from websockets.exceptions import ConnectionClosedError
 
 from algo_trader.app.config.base_config import ibkr_client
 from algo_trader.app.api.clients.portfolio import (
@@ -25,23 +26,32 @@ async def get_portfolio_values(websocket: WebSocket):
     )
 
     async def send_account_event(account_value: AccountValue):
-        if account_value.tag in request_settings.portfolio_required_fields:
+        if (
+            account_value.tag in request_settings.portfolio_required_fields
+            and websocket.application_state == WebSocketState.CONNECTED
+        ):
             currency: str = account_value.currency
             value = account_value.value
             if value:
                 value = float(value)
-            await websocket.send_json(
-                {
-                    "type": "update",
-                    "data": {
-                        tag: account_value.tag,
-                        currency: currency,
-                        value: value,
-                    },
-                }
-            )
+            try:
+                await websocket.send_json(
+                    {
+                        "type": "update",
+                        "data": {
+                            "tag": account_value.tag,
+                            "currency": currency,
+                            "value": value,
+                        },
+                    }
+                )
+            except:
+                print(
+                    f"Connection to PortfolioSummary has closed while sending json packet."
+                )
 
     ibkr_client.accountValueEvent += send_account_event
+    ibkr_client.accountSummaryEvent += send_account_event
 
     try:
         while True:
@@ -53,6 +63,7 @@ async def get_portfolio_values(websocket: WebSocket):
     finally:
         print("Cleaning up PortfolioValues Socket.")
         ibkr_client.accountValueEvent -= send_account_event
+        ibkr_client.accountSummaryEvent -= send_account_event
 
 
 @router.websocket("/holdings")
@@ -101,7 +112,10 @@ async def get_portfolio_holdings(websocket: WebSocket):
     # Subscribe to PnL for each portfolio item and send initial positions
     for contract_id, portfolio_item in portfolio_items.items():
         # Subscribe to P&L updates (modify according to how you want to handle subscriptions to avoid errors)
-        await send_portfolio_event(portfolio_item)
+        try:
+            await send_portfolio_event(portfolio_item)
+        except Exception as e:
+            print(f"Error encountered on send_portfolio_event")
         if contract_id not in pnl_subscriptions:
             try:
                 pnl_sub: PnLSingle = ibkr_client.reqPnLSingle(

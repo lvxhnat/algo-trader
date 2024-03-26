@@ -9,7 +9,7 @@ export interface OHLCVData {
 
 export interface ChartCanvasProps {
   children: React.ReactNode;
-  chartId: string;
+  chartId: number;
   width: number;
   height: number;
   margin: { left: number; right: number; top: number; bottom: number };

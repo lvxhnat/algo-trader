@@ -26,17 +26,20 @@ const StyledTableCell: React.FC<{
   color?: string;
   size?: "small" | "medium" | "large";
   fontWeight?: string;
+  align?: "left" | "center" | "right" | "justify" | "inherit" | undefined;
 }> = (props) => {
-  const sizes = { small: "5%", medium: "10%", large: "13%" };
+  const sizes = { small: "5%", medium: "10%", large: "12%" };
   return (
     <TableCell
       style={{ paddingTop: 1, paddingBottom: 1 }}
       width={props.size ? sizes[props.size] : undefined}
     >
       <Typography
+        align={props.align}
         variant="subtitle1"
         color={props.color}
         fontWeight={props.fontWeight}
+        style={{ width: "100%" }}
       >
         {props.children}
       </Typography>
@@ -48,22 +51,24 @@ const PortfolioRow: React.FC<PortfolioRowProps> = React.memo(({ entry }) => {
   const theme = useThemeStore();
   const navigate = useNavigate();
 
+  const formatPnl = (val: number) =>
+    val
+      ? val > 0
+        ? `$${val.toFixed(2)}`
+        : `$(${val.toFixed(2).slice(1)})`
+      : "$-";
+
   const unrealised_pnl: number = entry.unrealised_pnl;
+  const unrealised_pct: number =
+    (entry.market_price - entry.average_cost) / entry.average_cost;
   const pnlColor = unrealised_pnl > 0 ? ColorsEnum.green : ColorsEnum.red;
-  const pnlString =
-    unrealised_pnl > 0
-      ? `$${unrealised_pnl.toFixed(2)}`
-      : `$(${unrealised_pnl.toFixed(2).slice(1)})`;
+  const pnlString = formatPnl(unrealised_pnl);
   const daily_pnl: number = entry.daily_pnl;
   let dailyPnlColor,
     dailyPnlString = "$-";
   if (daily_pnl) {
     dailyPnlColor = daily_pnl > 0 ? ColorsEnum.green : ColorsEnum.red;
-    dailyPnlString = daily_pnl
-      ? daily_pnl > 0
-        ? `$${daily_pnl.toFixed(2)}`
-        : `$(${daily_pnl.toFixed(2).slice(1)})`
-      : "$-";
+    dailyPnlString = formatPnl(daily_pnl);
   }
   return (
     <TableRow
@@ -96,9 +101,33 @@ const PortfolioRow: React.FC<PortfolioRowProps> = React.memo(({ entry }) => {
       </StyledTableCell>
       <StyledTableCell color={dailyPnlColor}>{dailyPnlString}</StyledTableCell>
       <StyledTableCell color={pnlColor}>{pnlString}</StyledTableCell>
+      <StyledTableCell align="right" color={pnlColor}>
+        {unrealised_pct ? `${(100 * unrealised_pct).toFixed(2)}%` : "-%"}
+      </StyledTableCell>
     </TableRow>
   );
 });
+
+function connectPriceSocket(setActivePositions: (value: any) => void) {
+  let ws = new WebSocket(
+    `${process.env.REACT_APP_WEBSOCKET_URL}/portfolio/holdings`
+  );
+
+  ws.onmessage = function (event) {
+    const portfolioData: PortfolioWebsocketData = JSON.parse(event.data);
+    const data: PortfolioPositions = portfolioData.data;
+    setActivePositions(data);
+  };
+
+  ws.onerror = function (err: any) {
+    ws.close();
+    setTimeout(function () {
+      connectPriceSocket(setActivePositions);
+    }, 2000);
+  };
+
+  return ws;
+}
 
 export default function PortfolioPositionsTable() {
   const [activePositions, setActivePositions] = usePortfolioStore((state) => [
@@ -106,24 +135,12 @@ export default function PortfolioPositionsTable() {
     state.setActivePositions,
   ]);
   const connected = useConnectedStore((state) => state.connected);
-  const webSocketRef = React.useRef<WebSocket | null>(null); // Using ref to persist WebSocket instance
 
   React.useEffect(() => {
-    if (!webSocketRef.current) {
-      webSocketRef.current = new WebSocket(
-        `${process.env.REACT_APP_WEBSOCKET_URL}/portfolio/holdings`
-      );
-
-      webSocketRef.current.addEventListener("message", (event) => {
-        const portfolioData: PortfolioWebsocketData = JSON.parse(event.data);
-        const data: PortfolioPositions = portfolioData.data;
-        setActivePositions(data);
-      });
-    }
+    const socket = connectPriceSocket(setActivePositions);
 
     return () => {
-      webSocketRef.current?.close();
-      webSocketRef.current = null;
+      if (socket) socket.close();
       console.log("PortfolioPositions WebSocket Connection Closed");
     };
   }, [connected]);
@@ -143,13 +160,17 @@ export default function PortfolioPositionsTable() {
         <TableRow>
           <StyledTableCell size="medium"> Currency </StyledTableCell>
           <StyledTableCell> Exchange </StyledTableCell>
-          <StyledTableCell> Symbol </StyledTableCell>
-          <StyledTableCell size="medium"> Position </StyledTableCell>
+          <StyledTableCell size="medium"> Symbol </StyledTableCell>
+          <StyledTableCell size="small"> Pos </StyledTableCell>
           <StyledTableCell> Avg Cost </StyledTableCell>
-          <StyledTableCell> Mkt Price </StyledTableCell>
-          <StyledTableCell> Mkt Value </StyledTableCell>
-          <StyledTableCell size="large"> Daily PnL </StyledTableCell>
-          <StyledTableCell size="large"> Unrealised PnL </StyledTableCell>
+          <StyledTableCell size="medium"> Mkt Price </StyledTableCell>
+          <StyledTableCell size="medium"> Mkt Value </StyledTableCell>
+          <StyledTableCell size="medium"> Daily PnL </StyledTableCell>
+          <StyledTableCell size="medium"> Unrl PnL </StyledTableCell>
+          <StyledTableCell size="large" align="right">
+            {" "}
+            Unrl PnL (%){" "}
+          </StyledTableCell>
         </TableRow>
       </TableHead>
       <TableBody>
