@@ -1,5 +1,4 @@
 import math
-import asyncio
 from typing import Literal
 from pydantic import BaseModel
 from ib_insync import ContractDetails, Contract, Ticker
@@ -98,10 +97,9 @@ async def serialise_tickerdata(ticker_data: Ticker, status: MarketStatus):
 
 
 if __name__ == "__main__":
-    from ib_insync import Stock
 
     ibkr_client.sync_connect()
-    contract = Contract(conId=523014861)
+    contract = Contract(conId=265768)
     ibkr_client.qualifyContracts(contract)
 
     allowed_intervals = {
@@ -120,7 +118,7 @@ if __name__ == "__main__":
         endDateTime="",
         durationStr="1 D",
         barSizeSetting="1 min",
-        whatToShow="BID_ASK",
+        whatToShow="HISTORICAL_VOLATILITY",
         useRTH=True,
     )
 

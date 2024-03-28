@@ -83,7 +83,12 @@ async def get_price_stream(
     async def send_data(ticker):
         if websocket.application_state == WebSocketState.CONNECTED:
             data = await serialise_tickerdata(ticker, status="delayed")
-            await websocket.send_json(data)
+            try:
+                await websocket.send_json(data)
+            except:
+                print(
+                    f"Error occurred when sending price stream data in get_price_stream"
+                )
 
     contract = Contract(conId=contractId)
     await ibkr_client.qualifyContractsAsync(contract)

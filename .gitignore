@@ -1,8 +1,15 @@
+.DS_Store
+
 # Jupyter Notebooks 
-ipynb_checkpoints/
+.ipynb_checkpoints/
 *.ipynb 
 *Untitled.ipynb
 
 # Data Folders
 scraped-data/
 .env
+
+*.csv
+*.png 
+*.tsv
+*.parquet

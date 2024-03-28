@@ -89,7 +89,10 @@ async def get_portfolio_holdings(websocket: WebSocket):
                     await serialise_portfolioitem(portfolio_item)
                 )
             portfolio_items[portfolio_item["contract_id"]] = portfolio_item
-            await websocket.send_json({"data": portfolio_item})
+            try:
+                await websocket.send_json({"data": portfolio_item})
+            except:
+                print(f"Error encountered on send_portfolio_event")
 
     async def update_portfolio_event(pnl: PnLSingle):
         if websocket.application_state == WebSocketState.CONNECTED:
@@ -97,7 +100,7 @@ async def get_portfolio_holdings(websocket: WebSocket):
             pnl_subscriptions[contract_id] = pnl  # Update existing PnL entry
             portfolio_items[contract_id]["daily_pnl"] = (
                 None if math.isnan(pnl.dailyPnL) else pnl.dailyPnL
-            )  # This is the only field not returned by .positions()
+            )
             if not math.isnan(pnl.unrealizedPnL):
                 portfolio_items[contract_id][
                     "unrealised_pnl"
@@ -107,26 +110,27 @@ async def get_portfolio_holdings(websocket: WebSocket):
                 portfolio_items[contract_id]["market_price"] = float(
                     pnl.value
                 ) / float(pnl.position)
-            await websocket.send_json({"data": portfolio_items[contract_id]})
+            try:
+                await websocket.send_json(
+                    {"data": portfolio_items[contract_id]}
+                )
+            except Exception as e:
+                print(f"Error encountered on update_portfolio_event")
+                print(str(e)[:500])
 
     # Subscribe to PnL for each portfolio item and send initial positions
     for contract_id, portfolio_item in portfolio_items.items():
         # Subscribe to P&L updates (modify according to how you want to handle subscriptions to avoid errors)
-        try:
-            await send_portfolio_event(portfolio_item)
-        except Exception as e:
-            print(f"Error encountered on send_portfolio_event")
+        await send_portfolio_event(portfolio_item)
         if contract_id not in pnl_subscriptions:
             try:
                 pnl_sub: PnLSingle = ibkr_client.reqPnLSingle(
                     account, "", contract_id
                 )
-                pnl_subscriptions[contract_id] = pnl_sub
                 await update_portfolio_event(pnl_sub)
+                pnl_subscriptions[contract_id] = pnl_sub
             except Exception:
-                print(
-                    f"PnL Subscription for contract id {contract_id} already exists."
-                )
+                print(f"PnL Sub for conId {contract_id} already exists.")
 
     ibkr_client.updatePortfolioEvent += send_portfolio_event
     ibkr_client.pnlSingleEvent += update_portfolio_event
