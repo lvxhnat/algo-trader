@@ -22,7 +22,7 @@ function connectPriceSocket(
 
   ws.onmessage = function (event) {
     const response: PortfolioValuesDTO = JSON.parse(event.data);
-    if (response.type == "initialise")
+    if (response.type === "initialise")
       setValues(response.data as PortfolioInitDTO);
     else {
       const newValue: any = { ...values };
@@ -30,6 +30,7 @@ function connectPriceSocket(
       const tag = data.tag as keyof typeof newValue;
       if (!Object.keys(newValue).includes(tag as string)) newValue[tag] = {};
       if (data.value) newValue[tag][data.currency] = data.value;
+      console.log(data, newValue)
       setValues(newValue);
     }
   };
@@ -92,6 +93,21 @@ const DailyPnLCard = () => {
   );
 };
 
+const UnrealizedPnLCard = () => {
+  const activePositions = usePortfolioStore((state) => state.activePositions);
+  return (
+    <PortfolioCard
+      title={"Unrealised PnL"}
+      value={{
+        BASE: Object.values(activePositions).reduce(
+          (acc, obj) => acc + (obj.unrealised_pnl ?? 0),
+          0
+        ),
+      }}
+    />
+  );
+};
+
 export default function PortfolioSummary() {
   const [values, setValues] = React.useState<PortfolioValues>(
     {} as PortfolioValues
@@ -114,7 +130,7 @@ export default function PortfolioSummary() {
       />
       <PortfolioCard title={"Cash Balance"} value={values.CashBalance} />
       <DailyPnLCard />
-      <PortfolioCard title={"Unrealised PnL"} value={values.UnrealizedPnL} />
+      <UnrealizedPnLCard />
       <PortfolioCard title={"Buying Power"} value={values.BuyingPower} />
       <PortfolioCard
         title={"Accrued Dividend"}

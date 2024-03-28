@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useContext } from "react";
 import * as d3 from "d3";
 import { ChartCanvasContext } from "../ChartCanvas";
 import { ChartSettingsContent, useChartStore } from "../store";
-import { ColorsEnum } from "common/theme";
 import { useThemeStore } from "store/theme";
 
 interface HorizontalLineSeriesProps {

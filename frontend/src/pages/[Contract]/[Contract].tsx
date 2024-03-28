@@ -133,13 +133,13 @@ const getMarketStatus = (
   liquidHours: any,
   timeZone: string
 ) => {
-  const dateToday = moment(new Date()).format("YYYYMMDD");
-  const trading = tradingHours[dateToday];
-  const liquid = liquidHours[dateToday];
+  const dateToday = moment(new Date()).tz(timeZone)
+  const dt = dateToday.format("YYYYMMDD");
+  const trading = tradingHours[dt];
+  const liquid = liquidHours[dt];
+  if (liquid === "Hours") return "Market Closed";
 
-  if (liquid == "Hours") return "Market Closed";
-
-  const localTime = moment.tz(moment(), timeZone).format("HHmm");
+  const localTime = dateToday.format("HHmm");
   if (localTime > trading.end || localTime < trading.start)
     return "Market Closed";
   if (localTime > liquid.start && localTime < liquid.end) return "Market Open";
@@ -172,8 +172,8 @@ const MarketStatusPill = (props: MarketStatusPillProps) => {
         backgroundColor:
           marketStatus === "Market Closed"
             ? ColorsEnum.red
-            : marketStatus === " Market Open"
-            ? ColorsEnum.green
+            : marketStatus === "Market Open"
+            ? ColorsEnum.darkGreen
             : ColorsEnum.oldschoolOrange,
         fontSize: `calc(0.25rem + 0.3vw)`,
         height: 15,
@@ -195,12 +195,13 @@ export default function Contract() {
   const [contractData, setContractData] = React.useState<ContractInfo>();
   React.useEffect(() => {
     getContractInfo(params.conId!)
-      .then((res) => setContractData(res.data))
+      .then((res) => {
+        setContractData(res.data)})
       .catch(() => null);
   }, []);
 
-  const formatDate = (dateItem: any) =>
-    dateItem[moment(new Date()).format("YYYYMMDD")];
+  const formatDate = (dateItem: any, timeZone: string) => dateItem[moment(new Date()).tz(timeZone).format("YYYYMMDD")];
+
 
   return (
     <ContainerWrapper>
@@ -233,11 +234,11 @@ export default function Contract() {
                     ]
                   }${contractData.currency} 
             | Liquid Hours: ${
-              formatDate(contractData.liquid_hours) == "Closed"
+              formatDate(contractData.liquid_hours, contractData.time_zone) === "Closed"
                 ? "Closed"
-                : formatDate(contractData.liquid_hours).start
-                ? `${formatDate(contractData.liquid_hours).start} - ${
-                    formatDate(contractData.liquid_hours).end
+                : formatDate(contractData.liquid_hours, contractData.time_zone).start
+                ? `${formatDate(contractData.liquid_hours, contractData.time_zone).start} - ${
+                    formatDate(contractData.liquid_hours, contractData.time_zone).end
                   } (${contractData.time_zone})`
                 : "NA"
             }`

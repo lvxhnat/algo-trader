@@ -6,9 +6,7 @@ import { ColorsEnum } from "common/theme";
 import { useThemeStore } from "store/theme";
 import { OHLCVData } from "../type";
 
-interface LineSeriesProps {}
-
-export default function LineSeries(props: LineSeriesProps) {
+export default function LineSeries() {
   const theme = useThemeStore();
   const ref = useRef<SVGGElement>(null);
   const { chartId } = useContext(ChartCanvasContext)!;

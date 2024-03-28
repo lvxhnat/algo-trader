@@ -19,7 +19,6 @@ interface OHLCChartProps {
 export default function OHLCChart(props: OHLCChartProps) {
   const data = props.data;
   const orders = useOrdersStore((state) => state.orders[props.chartId]);
-  console.log(orders);
   const getExtentY = (arr: OHLCVData[]): [number, number] | undefined => {
     if (arr.length === 0) return undefined;
 

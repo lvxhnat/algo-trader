@@ -6,7 +6,7 @@ import { ChartSettingsContent, useChartStore } from "../Chart/store";
 
 const XAxis: React.FC = () => {
   const { chartId } = React.useContext(ChartCanvasContext)!;
-  const { data, height, xScale, margin } = useChartStore(
+  const { height, xScale, margin } = useChartStore(
     (state) =>
       state.chartSettings[
         chartId as keyof typeof state.chartSettings
@@ -22,7 +22,7 @@ const XAxis: React.FC = () => {
       .tickFormat((value) => moment(new Date(value)).format("DD MMM YY"))
       .tickValues(
         xScale.domain().filter(function (d, i) {
-          const jumps = Math.round(data.length / 10);
+          const jumps = Math.round(xScale.domain().length / 10);
           return !(i % jumps);
         })
       );

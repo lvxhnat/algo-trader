@@ -102,7 +102,7 @@ const PortfolioRow: React.FC<PortfolioRowProps> = React.memo(({ entry }) => {
       <StyledTableCell color={dailyPnlColor}>{dailyPnlString}</StyledTableCell>
       <StyledTableCell color={pnlColor}>{pnlString}</StyledTableCell>
       <StyledTableCell align="right" color={pnlColor}>
-        {unrealised_pct ? `${(100 * unrealised_pct).toFixed(2)}%` : "-%"}
+        {unrealised_pct && isFinite(unrealised_pct)? `${(100 * unrealised_pct).toFixed(2)}%` : "-%"}
       </StyledTableCell>
     </TableRow>
   );

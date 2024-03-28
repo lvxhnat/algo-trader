@@ -1,7 +1,7 @@
 // https://colordesigner.io/gradient-generator
 
 export enum ColorsEnum {
-  upHint = "#009C00",
+  g = "#009C00",
   downHint = "#EF2B00",
   primary = "#ff9b00",
   secondary = "#FFBAAB",

@@ -16,7 +16,6 @@ const PortfolioPieChart: React.FC<PortfolioPieChartProps> = (props) => {
   const svgRef = React.useRef<SVGSVGElement>(null);
   const margin = props.margin;
   const activePositions = usePortfolioStore((state) => state.activePositions);
-  console.log(activePositions);
 
   React.useEffect(() => {
     const dataset1 = [
